@@ -1,0 +1,31 @@
+import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import Header from "./components/Header";
+import FloatingButtons from "./components/FloatingButtons";
+import AppRoutes from "./routes/AppRoutes";
+import Footer from "./components/Footer";
+import { ToastContainer } from "react-toastify";
+
+function App() {
+  return (
+   <>
+   <Router>
+      <div className="font-sans">
+        <Header />
+        <main className="container mx-auto sm:px-4 lg:px-6 py-4 lg:py-8">
+          <AppRoutes />
+        </main>
+        <Footer />
+      </div>
+      <FloatingButtons />
+    </Router>
+
+
+      {/* Toast container must be added once */}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+    
+    </>
+  );
+}
+
+export default App;

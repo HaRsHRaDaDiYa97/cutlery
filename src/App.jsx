@@ -12,7 +12,7 @@ function App() {
    <Router>
       <div className="font-sans">
         <Header />
-        <main className="container mx-auto sm:px-4 lg:px-6 py-4 lg:py-8">
+        <main className="container mx-auto  py-4 lg:py-8">
           <AppRoutes />
         </main>
         <Footer />

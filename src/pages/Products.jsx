@@ -18,7 +18,7 @@ export default function Products() {
     fetch(`${API_BASE}/get_products.php`)
       .then((r) => r.json())
       .then((data) => {
-       
+
         if (Array.isArray(data)) {
           setAllProducts(data);
           setProducts(data);
@@ -48,9 +48,11 @@ export default function Products() {
         effectivePrice <= filters.price.max;
 
       // Category filter (string comparison now)
+      // Inside filter logic:
       const categoryMatch =
         filters.categories.length === 0 ||
-        filters.categories.includes(p.category);
+        filters.categories.includes(p.category); // ✅ backend provides category name
+
 
       return availabilityMatch && priceMatch && categoryMatch;
     });
@@ -77,7 +79,7 @@ export default function Products() {
               {products.map((p) => (
                 <Link key={p.id} to={`/product/${p.id}`}>
                   <ProductCard
-                    imageUrl={p.image || "/placeholder.png"}
+                    imageUrl={p.image || "no images"}
                     category={p.category} // text category
                     title={p.name}
                     price={p.price}

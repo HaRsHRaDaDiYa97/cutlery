@@ -1,9 +1,11 @@
 // src/components/FilterSidebar.js
 import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { API_BASE } from "../api";
 
 const CollapsibleSection = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
+
   return (
     <div className="border-b py-4">
       <button
@@ -13,28 +15,57 @@ const CollapsibleSection = ({ title, children }) => {
         <h3 className="font-semibold text-gray-800">{title}</h3>
         {isOpen ? <FiChevronUp /> : <FiChevronDown />}
       </button>
-      {isOpen && <div className="mt-4">{children}</div>}
+
+      {/* Animated Content */}
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="pb-2">{children}</div>
+      </div>
     </div>
   );
 };
 
-const FilterSidebar = ({ filters, setFilters, allProducts }) => {
+
+const FilterSidebar = ({ filters, setFilters }) => {
   const [categories, setCategories] = useState([]);
 
-  // Extract unique categories from all products
+  // Fetch categories from backend
   useEffect(() => {
-    if (Array.isArray(allProducts)) {
-      const uniqueCats = [...new Set(allProducts.map((p) => p.category).filter(Boolean))];
-      setCategories(uniqueCats);
-    }
-  }, [allProducts]);
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/get_categories.php`);
+        const data = await res.json();
+        if (data.success) {
+          setCategories(data.categories);
+        }
+      } catch (err) {
+        console.error("Failed to fetch categories", err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
 
   const handlePriceChange = (e) => {
-    setFilters((prev) => ({
-      ...prev,
-      price: { ...prev.price, [e.target.name]: Number(e.target.value) },
-    }));
-  };
+  const { name, value } = e.target;
+
+  // Allow empty string or valid number
+  setFilters((prev) => ({
+    ...prev,
+    price: {
+      ...prev.price,
+      [name]: value === "" ? "" : Number(value),
+    },
+  }));
+};
+
 
   const handleCheckboxChange = (filterType, value) => {
     setFilters((prev) => {
@@ -82,52 +113,70 @@ const FilterSidebar = ({ filters, setFilters, allProducts }) => {
         </div>
       </CollapsibleSection>
 
-      {/* Price */}
-      <CollapsibleSection title="Price">
-        <div className="flex items-center justify-between gap-4">
-          <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">
-              ₹
-            </span>
-            <input
-              type="number"
-              name="min"
-              value={filters.price.min}
-              onChange={handlePriceChange}
-              className="w-full pl-6 pr-2 py-1 border rounded"
-            />
-          </div>
-          <span>To</span>
-          <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">
-              ₹
-            </span>
-            <input
-              type="number"
-              name="max"
-              value={filters.price.max}
-              onChange={handlePriceChange}
-              className="w-full pl-6 pr-2 py-1 border rounded"
-            />
-          </div>
+     {/* Price Filter */}
+<CollapsibleSection title="Price">
+  <div className="flex flex-col gap-3">
+    <div className="grid grid-cols-2 gap-4">
+      {/* Min Price */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">
+          Min Price
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            ₹
+          </span>
+          <input
+            type="number"
+            name="min"
+            value={filters.price.min}
+            onChange={handlePriceChange}
+            placeholder="0"
+            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none"
+          />
         </div>
-      </CollapsibleSection>
+      </div>
+
+      {/* Max Price */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-600 mb-1">
+          Max Price
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            ₹
+          </span>
+          <input
+            type="number"
+            name="max"
+            value={filters.price.max}
+            onChange={handlePriceChange}
+            placeholder="10000"
+            className="w-full pl-7 pr-2 py-2 border rounded-md text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none"
+          />
+        </div>
+      </div>
+    </div>
+
+  </div>
+</CollapsibleSection>
+
 
       {/* Category */}
       <CollapsibleSection title="Category">
         <div className="space-y-2">
           {categories.map((cat) => (
-            <label className="flex items-center" key={cat}>
+            <label className="flex items-center" key={cat.id}>
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300"
-                value={cat}
+                value={cat.slug} // ✅ use slug as filter value
                 onChange={(e) =>
                   handleCheckboxChange("categories", e.target.value)
                 }
-                checked={filters.categories.includes(cat)}
+                checked={filters.categories.includes(cat.slug)}
               />
-              <span className="ml-2 text-gray-700">{cat}</span>
+              <span className="ml-2 text-gray-700">{cat.name}</span>
             </label>
           ))}
         </div>

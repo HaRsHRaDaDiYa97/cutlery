@@ -8,13 +8,10 @@ import 'swiper/css/navigation';
 
 // import required modules
 import { Navigation } from 'swiper/modules';
-import { FiChevronLeft, FiChevronRight, FiArrowUp } from 'react-icons/fi';
-import { BsWhatsapp } from 'react-icons/bs';
+import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 
-import couple_pendant from '../assets/images/couple_pendant.webp'
-import name_ring from '../assets/images/name_ring.webp'
-import pendant from '../assets/images/pendent.webp'
+import pendant from '../assets/images/pendant.webp'
 import keychain from '../assets/images/keychain.webp'
 import { Link } from 'react-router-dom';
 
@@ -23,24 +20,23 @@ import { Link } from 'react-router-dom';
 const categoryData = [
   {
     id: 1,
-    imgSrc: couple_pendant,
-    overlayTitle: 'Single Name Pendants',
+    slug: "keychain",
+    imgSrc: keychain,
+    overlayTitle: 'Keychains',
     overlaySubtitle: 'Starting from ₹ 249/-',
-    title: 'Single Name Necklace',
-    // Update href to a real path
-    href: '/category/single-name-necklace', 
+    title: 'Keychain',
   },
   {
     id: 2,
-    imgSrc: name_ring,
-    overlayTitle: 'Couple Name Pendants',
+    slug: "Pendant",
+    imgSrc: pendant,
+    overlayTitle: 'Pendants',
     overlaySubtitle: 'Starting from ₹ 249/-',
-    title: 'Couple Name Necklace',
-    // Update href to a real path
-    href: '/category/couple-name-necklace',
+    title: 'Pendant',
   },
-  // ... update for all other categories
+  // add more categories here
 ];
+
 
 
 const CategorySlider = () => {
@@ -98,7 +94,7 @@ const CategorySlider = () => {
         >
           {categoryData.map((category) => (
             <SwiperSlide key={category.id}>
-             <Link to={category.href} className="group block text-center">
+              <Link to={`/category/${category.slug}`} className="group block text-center">
                 <div className="relative overflow-hidden rounded-lg">
                   <img
                     src={category.imgSrc}
@@ -116,22 +112,23 @@ const CategorySlider = () => {
                   {category.title}
                 </h3>
               </Link>
+
             </SwiperSlide>
           ))}
         </Swiper>
-        
+
         {/* Custom Navigation */}
         <div className="flex justify-center items-center mt-8 gap-4">
-            <button className="category-swiper-button-prev p-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors">
-                <FiChevronLeft className="text-xl text-gray-600"/>
-            </button>
-            <button className="category-swiper-button-next p-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors">
-                <FiChevronRight className="text-xl text-gray-600"/>
-            </button>
+          <button className="category-swiper-button-prev p-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors">
+            <FiChevronLeft className="text-xl text-gray-600" />
+          </button>
+          <button className="category-swiper-button-next p-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors">
+            <FiChevronRight className="text-xl text-gray-600" />
+          </button>
         </div>
       </div>
-      
-     
+
+
 
     </div>
   );

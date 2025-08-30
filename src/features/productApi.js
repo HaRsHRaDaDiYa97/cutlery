@@ -1,0 +1,58 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE } from "../api";
+
+export const productApi = createApi({
+    reducerPath: "productApi",
+    baseQuery: fetchBaseQuery({ baseUrl: API_BASE }),
+    tagTypes: ["Product"],
+    endpoints: (builder) => ({
+        getProducts: builder.query({
+            query: () => "get_products.php",
+            providesTags: ["Product"],
+        }),
+        getProduct: builder.query({
+            query: (id) => `get_product.php?id=${id}`,
+            providesTags: ["Product"],
+        }),
+        getProductsByCategorySlug: builder.query({
+            query: (slug) => `category_slug.php?category_slug=${slug}`,
+            providesTags: ["Product"],
+        }),
+        addProduct: builder.mutation({
+            query: (formData) => ({
+                url: "add_product.php",
+                method: "POST",
+                body: formData,
+            }),
+            invalidatesTags: ["Product"],
+        }),
+        updateProduct: builder.mutation({
+            query: ({ id, formData }) => ({
+                url: `update_product.php?id=${id}`,
+                method: "POST",
+                body: formData,
+            }),
+            invalidatesTags: ["Product"],
+        }),
+       
+        deleteProduct: builder.mutation({
+            query: (id) => ({
+                url: "delete_product.php",
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
+            }),
+            invalidatesTags: ["Product"],
+        }),
+
+    }),
+});
+
+export const {
+    useGetProductsQuery,
+    useGetProductQuery,
+    useGetProductsByCategorySlugQuery, // ✅ hook added
+    useAddProductMutation,
+    useUpdateProductMutation,
+    useDeleteProductMutation,
+} = productApi;

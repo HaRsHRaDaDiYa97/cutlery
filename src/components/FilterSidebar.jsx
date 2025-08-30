@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { API_BASE } from "../api";
+import { useGetCategoriesQuery } from "../features/categoryApi";
 
 const CollapsibleSection = ({ title, children }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -30,42 +31,18 @@ const CollapsibleSection = ({ title, children }) => {
 
 
 const FilterSidebar = ({ filters, setFilters }) => {
-  const [categories, setCategories] = useState([]);
-
-  // Fetch categories from backend
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/get_categories.php`);
-        const data = await res.json();
-        if (data.success) {
-          setCategories(data.categories);
-        }
-      } catch (err) {
-        console.error("Failed to fetch categories", err);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
+ const { data, isLoading, isError } = useGetCategoriesQuery();
 
   const handlePriceChange = (e) => {
-  const { name, value } = e.target;
-
-  // Allow empty string or valid number
-  setFilters((prev) => ({
-    ...prev,
-    price: {
-      ...prev.price,
-      [name]: value === "" ? "" : Number(value),
-    },
-  }));
-};
-
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      price: {
+        ...prev.price,
+        [name]: value === "" ? "" : Number(value),
+      },
+    }));
+  };
 
   const handleCheckboxChange = (filterType, value) => {
     setFilters((prev) => {
@@ -78,6 +55,8 @@ const FilterSidebar = ({ filters, setFilters }) => {
       return { ...prev, [filterType]: updated };
     });
   };
+
+  const categories = data?.categories || [];
 
   return (
     <aside className="w-full lg:w-1/4">
@@ -186,3 +165,11 @@ const FilterSidebar = ({ filters, setFilters }) => {
 };
 
 export default FilterSidebar;
+
+
+
+
+
+
+
+

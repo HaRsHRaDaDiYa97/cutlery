@@ -1,76 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import FilterSidebar from './FilterSidebar';
-import ProductGrid from './ProductGrid';
-
-// --- Mock API Data ---
-// In a real app, you would fetch this from your backend.
-const allProducts = [
-  { id: 1, name: 'Fairy Angel Name Pendant', price: 299.00, original_price: 599.00, image: 'https://images.unsplash.com/photo-1610495228647-1c44bf37d883?w=500', inStock: true, brand: 'Diva Jeweller' },
-  { id: 2, name: 'Cursive Curved Name Necklace', price: 299.00, original_price: 599.00, image: 'https://images.unsplash.com/photo-1599643477877-53a81a442767?w=500', inStock: true, brand: 'Diva Jeweller' },
-  { id: 3, name: 'Special Style Name Necklace', price: 349.00, original_price: 699.00, image: 'https://images.unsplash.com/photo-1606813233139-9b768825d19a?w=500', inStock: true, brand: 'Diva Jeweller' },
-  { id: 4, name: 'Butterfly Name Necklace', price: 299.00, original_price: 599.00, image: 'https://images.unsplash.com/photo-1611652033959-8a3d445be40c?w=500', inStock: true, brand: 'Diva Jeweller' },
-  { id: 5, name: 'Infinity Single Heart Name', price: 399.00, original_price: 799.00, image: 'https://images.unsplash.com/photo-1627293504928-3a87f1b953d3?w=500', inStock: false, brand: 'Diva Jeweller' },
-  // ...add more products
-];
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import axios from "axios";
+import { API_BASE } from "../api";
+import ProductCard from "../components/ProductCard";
+import { useGetProductsByCategorySlugQuery } from "../features/productApi";
+import FilterSidebar from "../components/FilterSidebar";
 
 const CategoryPage = () => {
-  const [products, setProducts] = useState([]);
+
+const { slug } = useParams();
   const [filters, setFilters] = useState({
     availability: [],
-    price: { min: 0, max: 1000 },
-    brand: []
+    price: { min: 0, max: 100000 },
+    categories: [],
   });
+  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
 
-  // In a real app, you'd fetch products here.
-  // For now, we'll just load the mock data.
+  // RTK Query
+  const { data: fetchedProducts, isLoading, isError } =
+    useGetProductsByCategorySlugQuery(slug);
+
+  // Update state when fetchedProducts changes
   useEffect(() => {
-    // Simulating a fetch call
-    const filtered = allProducts.filter(p => {
-      // Availability filter
-      const availabilityMatch = filters.availability.length === 0 || 
-                               (filters.availability.includes('in-stock') && p.inStock) || 
-                               (filters.availability.includes('out-of-stock') && !p.inStock);
+    if (Array.isArray(fetchedProducts)) {
+      setAllProducts(fetchedProducts);
+      setProducts(fetchedProducts);
+    } else {
+      setAllProducts([]);
+      setProducts([]);
+    }
+  }, [fetchedProducts]);
 
-      // Price filter
-      const priceMatch = p.price >= filters.price.min && p.price <= filters.price.max;
+  // Apply filters
+  useEffect(() => {
+    const filtered = allProducts.filter((p) => {
+      const availabilityMatch =
+        filters.availability.length === 0 ||
+        (filters.availability.includes("in-stock") && p.stock > 0) ||
+        (filters.availability.includes("out-of-stock") && p.stock === 0);
 
-      // Brand filter
-      const brandMatch = filters.brand.length === 0 || filters.brand.includes(p.brand);
+      const effectivePrice = p.sale_price ? Number(p.sale_price) : Number(p.price);
+      const priceMatch = effectivePrice >= filters.price.min && effectivePrice <= filters.price.max;
 
-      return availabilityMatch && priceMatch && brandMatch;
+      return availabilityMatch && priceMatch;
     });
     setProducts(filtered);
-  }, [filters]);
+  }, [filters, allProducts]);
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prevFilters => {
-      // For checkboxes (availability, brand)
-      if (Array.isArray(prevFilters[filterType])) {
-        const newValues = prevFilters[filterType].includes(value)
-          ? prevFilters[filterType].filter(item => item !== value)
-          : [...prevFilters[filterType], value];
-        return { ...prevFilters, [filterType]: newValues };
-      }
-      // For other types like price range
-      return { ...prevFilters, [filterType]: value };
-    });
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-600">Failed to load products.</p>
+      </div>
+    );
+  }
+
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumbs */}
+    <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 mb-4">
-        <span>Home</span> &gt; <span className="font-medium text-gray-700">Single Name Necklace</span>
+        <Link to="/" className="hover:underline">
+          Home
+        </Link>{" "}
+        &gt;{" "}
+        <span className="font-medium text-gray-700">{slug}</span>
       </nav>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Single Name Necklace</h1>
+
+      {/* Category Title */}
+      <h1 className="text-3xl text-center font-bold text-gray-900 mb-8">
+        {slug.charAt(0).toUpperCase() + slug.slice(1)} Products
+      </h1>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Sidebar */}
-        <FilterSidebar filters={filters} onFilterChange={handleFilterChange} />
+        {/* Filters */}
+        <FilterSidebar filters={filters} setFilters={setFilters} />
 
-        {/* Right Content */}
+        {/* Products */}
         <main className="w-full lg:w-3/4">
-          <ProductGrid products={products} />
+          {products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((p) => (
+                <Link key={p.id} to={`/product/${p.id}`}>
+                  <ProductCard
+                    imageUrl={
+                      p.image_url ? `${API_BASE}/${p.image_url}` : "/placeholder.png"
+                    }
+                    category={slug}
+                    title={p.name}
+                    price={p.price}
+                    salePrice={p.sale_price}
+                  />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No products match the selected filters.</p>
+          )}
         </main>
       </div>
     </div>

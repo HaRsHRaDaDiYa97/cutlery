@@ -4,7 +4,7 @@ import { FiGrid, FiBox, FiTag, FiFileText, FiUsers, FiBarChart2, FiSettings, FiS
 
 const AdminSidebar = ({ isSidebarOpen }) => {
   const menuItems = [
-    { icon: <FiGrid />, name: 'Dashboard', path: '/admin' },
+    { icon: <FiGrid />, name: 'Dashboard', path: '/admin/products' },
     { icon: <FiShoppingCart />, name: 'Online Store', path: '/admin/store' },
     { icon: <FiBox />, name: 'Products', path: '/admin/products' },
     { icon: <FiTag />, name: 'Categories', path: '/admin/categories' },

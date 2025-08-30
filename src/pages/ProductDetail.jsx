@@ -1,98 +1,57 @@
 import { useEffect, useState } from "react";
-import { API_BASE } from "../api";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { useGetProductQuery } from "../features/productApi";
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWished, setIsWished] = useState(false);
 
-  const userId = 1; // TODO: Replace with logged-in user ID
+  const userId = 1; // TODO: replace with logged-in user ID
 
+  const { data: product, isLoading, isError } = useGetProductQuery(id);
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetch(`${API_BASE}/get_product.php?id=${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setProduct(data);
-        setActiveImageIndex(0);
-      })
-      .catch(() => toast.error("❌ Failed to load product"));
   }, [id]);
 
-  if (!product) {
-    return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <div className="text-xl font-medium">Loading...</div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="text-center">Loading...</div>;
+  if (isError) return <div className="text-center text-red-600">Failed to load product</div>;
+  if (!product) return null;
 
-  const onSale =
-    product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price);
-
-  let discountPercent = 0;
-  if (onSale) {
-    discountPercent = Math.round(
-      ((product.price - product.sale_price) / product.price) * 100
-    );
-  }
+  const onSale = product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price);
+  const discountPercent = onSale
+    ? Math.round(((product.price - product.sale_price) / product.price) * 100)
+    : 0;
 
   const handleQuantityChange = (amount) => {
     setQuantity((prev) => {
-      const newQuantity = prev + amount;
-      if (newQuantity < 1) return 1;
-      if (newQuantity > product.stock) return product.stock;
-      return newQuantity;
+      const newQty = prev + amount;
+      if (newQty < 1) return 1;
+      if (newQty > product.stock) return product.stock;
+      return newQty;
     });
   };
 
-  // 👉 Add to Cart
-  const handleAddToCart = () => {
-    fetch(`${API_BASE}/add_to_cart.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        product_id: product.id,
-        quantity: quantity,
-      }),
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success) {
-          toast.success("✅ Product added to cart!");
-        } else {
-          toast.error("❌ Failed to add to cart");
-        }
-      })
-      .catch(() => toast.error("❌ Error adding to cart"));
+  const handleAddToCart = async () => {
+    try {
+      const res = await addToCart({ user_id: userId, product_id: product.id, quantity }).unwrap();
+      toast.success(res.message || "✅ Product added to cart!");
+    } catch (err) {
+      toast.error("❌ Failed to add to cart");
+    }
   };
 
-  // 👉 Add to Wishlist
-  const handleWishlist = () => {
-    fetch(`${API_BASE}/add_to_wishlist.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        product_id: product.id,
-      }),
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        if (res.success) {
-          setIsWished(true);
-          toast.success("❤️ Added to wishlist");
-        } else {
-          toast.error("❌ Failed to add to wishlist");
-        }
-      })
-      .catch(() => toast.error("❌ Error adding to wishlist"));
+  const handleWishlist = async () => {
+    try {
+      const res = await addToWishlist({ user_id: userId, product_id: product.id }).unwrap();
+      setIsWished(true);
+      toast.success(res.message || "❤️ Added to wishlist");
+    } catch (err) {
+      toast.error("❌ Failed to add to wishlist");
+    }
   };
 
   return (

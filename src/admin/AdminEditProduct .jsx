@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { API_BASE } from "../api";
+import { useGetProductQuery, useUpdateProductMutation } from "../features/productApi";
+import { useGetCategoriesQuery } from "../features/categoryApi";
+import { toast } from "react-toastify";
 
 export default function AdminEditProduct() {
+
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const { data: product, isLoading, error } = useGetProductQuery(id);
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+
+  const { data: categoriesData } = useGetCategoriesQuery(); // ✅ RTK Query for categories
+  const categories = categoriesData?.categories || [];
 
   const [form, setForm] = useState({
     name: "",
@@ -20,52 +29,29 @@ export default function AdminEditProduct() {
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [primaryIndex, setPrimaryIndex] = useState(0);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
 
+  // Populate form when product loads
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/get_categories.php`);
-        const data = await res.json();
-        if (data.success) setCategories(data.categories);
-      } catch (err) {
-        console.error("Failed to fetch categories", err);
+    if (product) {
+      setForm({
+        name: product.name || "",
+        slug: product.slug || "",
+        category_id: product.category_id || "",
+        price: product.price || "",
+        sale_price: product.sale_price || "",
+        currency: product.currency || "INR",
+        stock: product.stock || "",
+        description: product.description || "",
+      });
+      setExistingImages(product.images || []);
+      if (product.images?.length > 0) {
+        const primaryIdx = product.images.findIndex(
+          (img) => img.is_primary === "1" || img.is_primary === 1
+        );
+        setPrimaryIndex(primaryIdx >= 0 ? primaryIdx : 0);
       }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/get_product.php?id=${id}`);
-        const data = await res.json();
-        setForm({
-          name: data.name || "",
-          slug: data.slug || "",
-          category_id: data.category_id || "",
-          price: data.price || "",
-          sale_price: data.sale_price || "",
-          currency: data.currency || "INR",
-          stock: data.stock || "",
-          description: data.description || "",
-        });
-        setExistingImages(data.images || []);
-        if (data.images?.length > 0) {
-          const primaryIdx = data.images.findIndex(
-            (img) => img.is_primary === "1" || img.is_primary === 1
-          );
-          setPrimaryIndex(primaryIdx >= 0 ? primaryIdx : 0);
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to fetch product", err);
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [id]);
+    }
+  }, [product]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -79,34 +65,34 @@ export default function AdminEditProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
+
     Object.keys(form).forEach((key) => formData.append(key, form[key]));
     formData.append("id", id);
     formData.append("primary_index", primaryIndex);
 
     images.forEach((img) => formData.append("images[]", img));
-    existingImages.forEach((img) => formData.append("existing_images[]", img.image_url));
+    existingImages.forEach((img) =>
+      formData.append("existing_images[]", img.image_url)
+    );
 
     try {
-      const res = await fetch(`${API_BASE}/update_product.php`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert("✅ Product updated successfully!");
+      const res = await updateProduct({ id, formData }).unwrap();
+      if (res.success) {
+        toast.success("Product updated successfully!");
         navigate("/admin/products");
       } else {
-        alert("❌ Failed: " + (data.error || "Unknown error"));
+        toast.error(res.error || "Failed to update product");
       }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong!");
     }
   };
 
-  if (loading) return <p className="p-6">Loading product...</p>;
+  if (isLoading) return <p className="p-6">Loading product...</p>;
+  if (error) return <p className="p-6 text-red-500">Failed to load product</p>;
+
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">

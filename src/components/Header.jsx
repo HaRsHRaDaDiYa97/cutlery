@@ -11,8 +11,8 @@ const Header = () => {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
-    { name: 'Keychain', href: '/keychain' },
-    { name: 'Ring', href: '/ring' },
+    { name: 'Wishlist', href: '/wishlist' },
+   
   ];
 
   return (
@@ -44,7 +44,9 @@ const Header = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className="text-sm font-medium text-gray-700 hover:text-blue-900 transition-colors"
+                    className="relative text-black hover:text-black transition-colors duration-300
+             after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 
+             after:bg-black hover:after:w-full after:transition-all after:duration-300"
               >
                 {link.name}
               </Link>

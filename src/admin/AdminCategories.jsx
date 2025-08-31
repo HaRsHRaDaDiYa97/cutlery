@@ -1,122 +1,3 @@
-
-// import React, { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
-// import { FiPlus, FiTrash2 } from "react-icons/fi";
-// import { API_BASE } from "../api";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// const AdminCategories = () => {
-//   const [categories, setCategories] = useState([]);
-
-//   // Fetch categories from backend
-//   const fetchCategories = async () => {
-//     try {
-//       const res = await fetch(`${API_BASE}/get_categories.php`);
-//       const data = await res.json();
-//       if (data.success) {
-//         setCategories(data.categories);
-//       } else {
-//         toast.error("Failed to fetch categories.");
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       toast.error("Something went wrong while fetching categories.");
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchCategories();
-//   }, []);
-
-//   // Delete category
-//   const handleDelete = async (id) => {
-//     if (!window.confirm("Are you sure you want to delete this category?")) return;
-
-//     try {
-//       const res = await fetch(`${API_BASE}/delete_category.php?id=${id}`, {
-//         method: "DELETE",
-//       });
-//       const data = await res.json();
-//       if (data.success) {
-//         toast.success(data.message || "Category deleted successfully");
-//         fetchCategories();
-//       } else {
-//         toast.error("Failed to delete category.");
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       toast.error("Something went wrong while deleting category.");
-//     }
-//   };
-
-//   return (
-//     <div className="p-6 bg-gray-100 min-h-screen">
-//       {/* Toast Container */}
-//       <ToastContainer position="top-right" autoClose={3000} />
-
-//       <div className="max-w-7xl mx-auto">
-//         {/* Page Header */}
-//         <div className="flex justify-between items-center mb-6">
-//           <h1 className="text-3xl font-bold text-gray-800">Categories</h1>
-//           <Link
-//             to="/admin/add-category"
-//             className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
-//           >
-//             <FiPlus className="mr-2" /> Add Category
-//           </Link>
-//         </div>
-
-//         {/* Categories Table */}
-//         <div className="overflow-x-auto shadow-md sm:rounded-lg bg-white">
-//           <table className="w-full text-left text-gray-700">
-//             <thead className="bg-gray-50 uppercase text-sm font-medium">
-//               <tr>
-//                 <th className="px-6 py-3">ID</th>
-//                 <th className="px-6 py-3">Name</th>
-//                 <th className="px-6 py-3">Slug</th>
-//                 <th className="px-6 py-3">Actions</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {categories.length > 0 ? (
-//                 categories.map((cat) => (
-//                   <tr key={cat.id} className="border-b hover:bg-gray-50">
-//                     <td className="px-6 py-4">{cat.id}</td>
-//                     <td className="px-6 py-4 font-medium">{cat.name}</td>
-//                     <td className="px-6 py-4">{cat.slug}</td>
-//                     <td className="px-6 py-4 flex space-x-3">
-//                       <button
-//                         onClick={() => handleDelete(cat.id)}
-//                         className="text-red-600 hover:text-red-800 cursor-pointer"
-//                       >
-//                         <FiTrash2 size={18} />
-//                       </button>
-//                     </td>
-//                   </tr>
-//                 ))
-//               ) : (
-//                 <tr>
-//                   <td colSpan="4" className="text-center py-4 text-gray-500">
-//                     No categories found.
-//                   </td>
-//                 </tr>
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminCategories;
-
-
-
-
-
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
@@ -125,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useDeleteCategoryMutation, useGetCategoriesQuery } from "../features/categoryApi";
 
 const AdminCategories = () => {
-  const { data, isLoading, isError, refetch  } = useGetCategoriesQuery();
+  const { data, isLoading, isError, refetch } = useGetCategoriesQuery();
   const [deleteCategory] = useDeleteCategoryMutation();
 
   const handleDelete = async (id) => {
@@ -134,53 +15,90 @@ const AdminCategories = () => {
     try {
       await deleteCategory(id).unwrap();
       toast.success("Category deleted successfully!");
-       refetch(); 
+      refetch();
     } catch (err) {
       toast.error("Failed to delete category.");
       console.error(err);
     }
-  };    
+  };
 
-  if (isLoading) return <p className="p-6">Loading...</p>;
-  if (isError) return <p className="p-6 text-red-600">Failed to load categories.</p>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-gray-600 text-lg">Loading categories...</p>
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-red-600 text-lg">Failed to load categories.</p>
+      </div>
+    );
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100 p-6 sm:p-10">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-7xl mx-auto">
+
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Categories</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-0">
+            Categories
+          </h1>
           <Link
             to="/admin/add-category"
-            className="flex items-center bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700"
+            className="flex items-center bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg shadow hover:bg-blue-700 transition"
           >
             <FiPlus className="mr-2" /> Add Category
           </Link>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto shadow-md sm:rounded-lg bg-white">
-          <table className="w-full text-left text-gray-700">
-            <thead className="bg-gray-50 uppercase text-sm font-medium">
+        <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-blue-50 text-blue-800 uppercase text-sm font-semibold">
               <tr>
-                <th className="px-6 py-3">ID</th>
+                <th className="px-6 py-3">No.</th>
+                <th className="px-6 py-3">Image</th>
                 <th className="px-6 py-3">Name</th>
                 <th className="px-6 py-3">Slug</th>
-                <th className="px-6 py-3">Actions</th>
+                <th className="px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200">
               {data?.categories?.length > 0 ? (
-                data.categories.map((cat) => (
-                  <tr key={cat.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4">{cat.id}</td>
-                    <td className="px-6 py-4 font-medium">{cat.name}</td>
-                    <td className="px-6 py-4">{cat.slug}</td>
-                    <td className="px-6 py-4 flex space-x-3">
+                data.categories.map((cat, index) => (
+                  <tr
+                    key={cat.id}
+                    className="hover:bg-blue-50 transition duration-200"
+                  >
+                    <td className="px-6 py-4 text-gray-600 font-medium">{index + 1}</td>
+
+                    {/* Image */}
+                    <td className="px-6 py-4">
+                      {cat.image ? (
+                        <div className="w-16 h-16 overflow-hidden rounded-lg shadow-sm">
+                          <img
+                            src={cat.image}
+                            alt={cat.name}
+                            className="w-full h-full object-cover transform transition duration-300 hover:scale-110"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No image</span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 font-medium text-gray-800">{cat.name}</td>
+                    <td className="px-6 py-4 text-gray-600">{cat.slug}</td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 flex justify-center space-x-3">
                       <button
                         onClick={() => handleDelete(cat.id)}
-                        className="text-red-600 hover:text-red-800 cursor-pointer"
+                        className="flex cursor-pointer items-center justify-center w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition"
+                        title="Delete category"
                       >
                         <FiTrash2 size={18} />
                       </button>
@@ -189,7 +107,7 @@ const AdminCategories = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center py-4 text-gray-500">
+                  <td colSpan="5" className="text-center py-6 text-gray-500">
                     No categories found.
                   </td>
                 </tr>

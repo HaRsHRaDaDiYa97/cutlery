@@ -17,12 +17,12 @@ const slidesData = [
   {
     id: 1,
     imageUrl: Desktop_Banner_1,
-    link: "/category/all-products",
+    link: "/products",
   },
   {
     id: 2,
     imageUrl: DIVA_BANNER_2,
-    link: "/category/ring",
+    link: "/products",
   },
 ];
 

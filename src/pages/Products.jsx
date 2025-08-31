@@ -60,44 +60,46 @@ export default function Products() {
   }, [filters, allProducts]);
 
   return (
-   <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  {/* Breadcrumbs */}
-  <nav className="text-sm text-gray-500 mb-4">
-    <Link to="/" className="hover:underline">
-      Home
-    </Link>{" "}
-    &gt;{" "}
-    <span className="font-medium text-gray-700">Products</span>
-  </nav>
+    <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumbs */}
+      <nav className="text-sm text-gray-500 mb-4">
+        <Link to="/" className="hover:underline">
+          Home
+        </Link>{" "}
+        &gt;{" "}
+        <span className="font-medium text-gray-700">Products</span>
+      </nav>
 
-  <h1 className="text-3xl text-center font-bold text-gray-900 mb-8">Our Products</h1>
+      <h1 className="text-3xl text-center font-bold text-gray-900 mb-8">Our Products</h1>
 
-  <div className="flex flex-col lg:flex-row gap-8">
-    {/* Left Sidebar */}
-    <FilterSidebar filters={filters} setFilters={setFilters} />
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Sidebar */}
+        <FilterSidebar filters={filters} setFilters={setFilters} />
 
-    {/* Right Content */}
-    <main className="w-full lg:w-3/4">
-      {Array.isArray(products) && products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p) => (
-            <Link key={p.id} to={`/product/${p.id}`}>
-              <ProductCard
-                imageUrl={p.image || "/placeholder.png"} 
-                category={p.category}
-                title={p.name}
-                price={p.price}
-                salePrice={p.sale_price}
-              />
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">No products found</p>
-      )}
-    </main>
-  </div>
-</div>
+        {/* Right Content */}
+        <main className="w-full lg:w-3/4">
+          {Array.isArray(products) && products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((p) => (
+                <Link key={p.id} to={`/product/${p.id}`}>
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}          // ✅ important!
+                    imageUrl={p.image}
+                    category={p.category}
+                    title={p.title}
+                    price={p.price}
+                    salePrice={p.salePrice}
+                  />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No products found</p>
+          )}
+        </main>
+      </div>
+    </div>
 
   );
 }

@@ -1,63 +1,27 @@
 // src/components/CategorySlider.js
-
-import React, { useState, useEffect } from 'react';
-// Import Swiper React components and styles
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-
-// import required modules
-import { Navigation } from 'swiper/modules';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
-
-import pendant from '../assets/images/pendant.webp'
-import keychain from '../assets/images/keychain.webp'
-import { Link } from 'react-router-dom';
-
-
-// --- Placeholder Data for Categories (Update the href) ---
-const categoryData = [
-  {
-    id: 1,
-    slug: "keychain",
-    imgSrc: keychain,
-    overlayTitle: 'Keychains',
-    overlaySubtitle: 'Starting from ₹ 249/-',
-    title: 'Keychain',
-  },
-  {
-    id: 2,
-    slug: "Pendant",
-    imgSrc: pendant,
-    overlayTitle: 'Pendants',
-    overlaySubtitle: 'Starting from ₹ 249/-',
-    title: 'Pendant',
-  },
-  // add more categories here
-];
-
-
+import React, { useEffect, useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Navigation } from "swiper/modules";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { Link } from "react-router-dom";
+import { useGetCategoriesQuery } from "../features/categoryApi";
 
 const CategorySlider = () => {
+  const { data, isLoading, isError } = useGetCategoriesQuery();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
+      setShowScrollTop(window.scrollY > 300);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+  if (isLoading) return <p className="text-center py-8">Loading categories...</p>;
+  if (isError) return <p className="text-center py-8 text-red-600">Failed to load categories.</p>;
 
   return (
     <div className="py-12 bg-white">
@@ -69,50 +33,37 @@ const CategorySlider = () => {
         <Swiper
           modules={[Navigation]}
           navigation={{
-            nextEl: '.category-swiper-button-next',
-            prevEl: '.category-swiper-button-prev',
+            nextEl: ".category-swiper-button-next",
+            prevEl: ".category-swiper-button-prev",
           }}
           spaceBetween={30}
           breakpoints={{
-            // when window width is >= 320px
-            320: {
-              slidesPerView: 1,
-              spaceBetween: 15
-            },
-            // when window width is >= 640px
-            640: {
-              slidesPerView: 2,
-              spaceBetween: 20
-            },
-            // when window width is >= 1024px
-            1024: {
-              slidesPerView: 4,
-              spaceBetween: 30
-            }
+            320: { slidesPerView: 1, spaceBetween: 15 },
+            640: { slidesPerView: 2, spaceBetween: 20 },
+            1024: { slidesPerView: 4, spaceBetween: 30 },
           }}
           className="w-full"
         >
-          {categoryData.map((category) => (
+          {data?.categories?.map((category) => (
             <SwiperSlide key={category.id}>
               <Link to={`/category/${category.slug}`} className="group block text-center">
                 <div className="relative overflow-hidden rounded-lg">
                   <img
-                    src={category.imgSrc}
-                    alt={category.title}
+                    src={category.image} // dynamically from API
+                    alt={category.name}
                     className="w-full h-72 object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
                   />
                   <div className="absolute inset-x-0 bottom-4">
                     <div className="mx-auto w-4/5 bg-white/80 backdrop-blur-sm p-3 text-gray-800 rounded-md shadow-sm">
-                      <h4 className="font-semibold">{category.overlayTitle}</h4>
-                      <p className="text-sm">{category.overlaySubtitle}</p>
+                      <h4 className="font-semibold capitalize">{category.name}</h4>
+                      <p className="text-sm">Starting from ₹ 249/-</p>
                     </div>
                   </div>
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-gray-800">
-                  {category.title}
+                <h3 className="mt-4 text-lg font-semibold capitalize text-gray-800">
+                  {category.name}
                 </h3>
               </Link>
-
             </SwiperSlide>
           ))}
         </Swiper>
@@ -127,9 +78,6 @@ const CategorySlider = () => {
           </button>
         </div>
       </div>
-
-
-
     </div>
   );
 };

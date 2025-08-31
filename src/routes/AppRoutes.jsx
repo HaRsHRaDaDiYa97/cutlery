@@ -10,6 +10,8 @@ import AdminEditProduct from "../admin/AdminEditProduct ";
 import AdminAddProduct from "../admin/AdminAddProduct";
 import AdminCategories from "../admin/AdminCategories";
 import AdminAddCategory from "../admin/AdminAddCategory";
+import LoginForm from "../pages/LoginForm";
+import SignupForm from "../pages/SignupForm";
 
 function AppRoutes() {
     return (
@@ -18,7 +20,10 @@ function AppRoutes() {
             <Route path="/category/:slug" element={<CategoryPage />} /> {/* Add this new route */}
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+  
+  <Route path="login" element={<LoginForm />} />
 
+  <Route path="signup" element={<SignupForm />} />
 
             <Route path="/admin" element={<AdminLayout />}>
                 <Route path="products" element={<AdminProductList />} />

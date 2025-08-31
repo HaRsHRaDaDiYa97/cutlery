@@ -5,6 +5,8 @@ import { API_BASE } from "../api";
 import ProductCard from "../components/ProductCard";
 import { useGetProductsByCategorySlugQuery } from "../features/productApi";
 import FilterSidebar from "../components/FilterSidebar";
+import { useSelector } from "react-redux";
+import { useGetWishlistQuery } from "../features/wishlistApi";
 
 const CategoryPage = () => {
 
@@ -16,6 +18,17 @@ const { slug } = useParams();
   });
   const [products, setProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+
+
+const userId = useSelector((state) => state.auth.user?.id);
+
+
+  const { data: wishlistData, error,  isFetching } = useGetWishlistQuery(userId, {
+    skip: !userId, // ✅ skip API call if not logged in
+  });
+
+
+
 
   // RTK Query
   const { data: fetchedProducts, isLoading, isError } =
@@ -92,13 +105,16 @@ const { slug } = useParams();
               {products.map((p) => (
                 <Link key={p.id} to={`/product/${p.id}`}>
                   <ProductCard
-                    imageUrl={
+                    key={p.id}
+                    id={p.id}          // ✅ important!
+                   imageUrl={
                       p.image_url ? `${API_BASE}/${p.image_url}` : "/placeholder.png"
                     }
-                    category={slug}
+                    category={p.category}
                     title={p.name}
                     price={p.price}
                     salePrice={p.sale_price}
+                    wishlistData={wishlistData}
                   />
                 </Link>
               ))}

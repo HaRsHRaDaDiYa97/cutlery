@@ -7,7 +7,7 @@ import { categoryApi } from "../features/categoryApi";
 import { productApi } from "../features/productApi";
 import { authApi } from "../features/authApi";
 import { wishlistApi } from "../features/wishlistApi";
-import authReducer from "./slices/authSlice";
+import authReducer from "./slice/authSlice";
 
 // Persist config
 const persistConfig = {

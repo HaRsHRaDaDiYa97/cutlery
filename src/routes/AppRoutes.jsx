@@ -12,6 +12,7 @@ import AdminCategories from "../admin/AdminCategories";
 import AdminAddCategory from "../admin/AdminAddCategory";
 import LoginForm from "../pages/LoginForm";
 import SignupForm from "../pages/SignupForm";
+import Wishlist from "../pages/Wishlist";
 
 function AppRoutes() {
     return (
@@ -20,6 +21,7 @@ function AppRoutes() {
             <Route path="/category/:slug" element={<CategoryPage />} /> {/* Add this new route */}
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/wishlist" element={<Wishlist />} />
   
   <Route path="login" element={<LoginForm />} />
 

@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSearch, FiUser, FiShoppingBag, FiMenu, FiX } from 'react-icons/fi';
+import { useGetWishlistQuery } from '../features/wishlistApi';
+import { useSelector } from 'react-redux';
+
+import { AiOutlineHeart } from 'react-icons/ai'; // Heart icon
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,9 +15,13 @@ const Header = () => {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Products', href: '/products' },
-    { name: 'Wishlist', href: '/wishlist' },
-   
+
   ];
+
+
+  const userId = useSelector((state) => state.auth.user?.id);
+  const { data: wishlist = [], isLoading } = useGetWishlistQuery(userId);
+
 
   return (
     <>
@@ -22,7 +30,7 @@ const Header = () => {
       {/* ============================== */}
       <header className="sticky top-0 z-40 bg-gray-50/90 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          
+
           {/* == Left Section: Hamburger (Mobile) & Logo == */}
           <div className="flex items-center">
             <button
@@ -44,24 +52,40 @@ const Header = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                    className="relative text-black hover:text-black transition-colors duration-300
+                className="relative text-black hover:text-black transition-colors duration-300
              after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 
              after:bg-black hover:after:w-full after:transition-all after:duration-300"
               >
                 {link.name}
+
+
+
               </Link>
             ))}
           </nav>
 
           {/* == Right Section: Icons == */}
           <div className="flex items-center gap-5 text-xl">
-            <button 
+            <button
               onClick={() => setIsSearchOpen(true)}
-              aria-label="Search" 
+              aria-label="Search"
               className="text-gray-700 hover:text-blue-900"
             >
               <FiSearch />
             </button>
+
+
+            {/* Wishlist (Heart Button with Count) */}
+            <Link to="/wishlist" aria-label="Wishlist" className="relative text-gray-700 hover:text-blue-900">
+              <AiOutlineHeart size={22} />
+              {!isLoading && wishlist?.length > 0 && (
+                <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center 
+                  rounded-full bg-red-500 text-[10px] text-white">
+                  {wishlist.length}
+                </span>
+              )}
+            </Link>
+
             <Link to="/account" aria-label="My Account" className="hidden text-gray-700 hover:text-blue-900 md:block">
               <FiUser />
             </Link>
@@ -92,7 +116,7 @@ const Header = () => {
               className="w-full h-10 rounded-md border border-gray-300 pl-10 pr-4 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
-          
+
           {/* Right side Icons */}
           <div className="flex items-center gap-5 text-xl">
             <Link to="/account" aria-label="My Account" className="text-gray-700 hover:text-blue-900">
@@ -116,18 +140,16 @@ const Header = () => {
       {/* ============================== */}
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 md:hidden ${
-          isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setIsMenuOpen(false)}
         aria-hidden="true"
       ></div>
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white z-60 shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
-          isMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-white z-60 shadow-xl transition-transform duration-300 ease-in-out md:hidden ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Drawer Header */}
@@ -162,7 +184,7 @@ const Header = () => {
           {/* Drawer Footer/Account Section */}
           <div className="mt-auto p-4 border-t">
             <h3 className="font-semibold text-gray-800">My Account</h3>
-            <Link 
+            <Link
               to="/login"
               className="mt-3 block w-full bg-gray-900 text-center text-white py-2.5 rounded-md font-semibold hover:bg-gray-800 transition-colors"
             >

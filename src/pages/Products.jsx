@@ -4,6 +4,8 @@ import { API_BASE } from "../api";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import FilterSidebar from "../components/FilterSidebar";
+import { useGetWishlistQuery } from "../features/wishlistApi";
+import { useSelector } from "react-redux";
 
 export default function Products() {
   const [allProducts, setAllProducts] = useState([]);
@@ -14,6 +16,14 @@ export default function Products() {
     categories: [], // now categories are strings
   });
 
+  const userId = useSelector((state) => state.auth.user?.id);
+
+
+  const { data: wishlistData, error, isLoading, isFetching } = useGetWishlistQuery(userId, {
+    skip: !userId, // ✅ skip API call if not logged in
+  });
+
+  
   useEffect(() => {
     fetch(`${API_BASE}/get_products.php`)
       .then((r) => r.json())
@@ -87,10 +97,13 @@ export default function Products() {
                     id={p.id}          // ✅ important!
                     imageUrl={p.image}
                     category={p.category}
-                    title={p.title}
+                    title={p.name}
                     price={p.price}
-                    salePrice={p.salePrice}
+                    salePrice={p.sale_price}
+                    wishlistData={wishlistData}
                   />
+
+
                 </Link>
               ))}
             </div>

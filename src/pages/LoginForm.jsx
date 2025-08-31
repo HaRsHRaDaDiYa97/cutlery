@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLoginMutation } from "../features/authApi";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "../app/slices/authSlice";
+import { setCredentials } from "../app/slice/authSlice";
 
 function LoginForm() {
   const [form, setForm] = useState({ mobile: "", password: "" });

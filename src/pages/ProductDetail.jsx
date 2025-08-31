@@ -3,16 +3,63 @@ import { useParams, Link as RouterLink } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useGetProductQuery } from "../features/productApi";
+import { useAddToWishlistMutation, useGetWishlistQuery, useRemoveFromWishlistMutation } from "../features/wishlistApi";
+import { useSelector } from "react-redux";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWished, setIsWished] = useState(false);
 
-  const userId = 1; // TODO: replace with logged-in user ID
+  const userId = useSelector((state) => state.auth.user?.id);
+
+  const { data: wishlistData } = useGetWishlistQuery(userId, {
+    skip: !userId,
+  });
 
   const { data: product, isLoading, isError } = useGetProductQuery(id);
+
+
+  const [isWished, setIsWished] = useState(false);
+  const [addToWishlist] = useAddToWishlistMutation();
+  const [removeFromWishlist] = useRemoveFromWishlistMutation();
+
+useEffect(() => {
+  if (!product || !wishlistData || !Array.isArray(wishlistData)) return;
+
+  const found = wishlistData.some(
+    (item) => Number(item.product_id) === Number(product.id)
+  );
+  setIsWished(found);
+}, [wishlistData, product]);
+
+
+
+  const handleWishlist = async () => {
+    if (!userId) {
+      toast.error("Please login to use wishlist");
+      return;
+    }
+
+    try {
+      if (!isWished) {
+        await addToWishlist({ user_id: userId, product_id: product.id }).unwrap();
+        setIsWished(true);
+        toast.success("❤️ Added to wishlist");
+      } else {
+        await removeFromWishlist({ user_id: userId, product_id: product.id }).unwrap();
+        setIsWished(false);
+        toast("💔 Removed from wishlist");
+      }
+    } catch (err) {
+      console.error("Wishlist API error:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
+
+
+
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -44,27 +91,19 @@ export default function ProductDetail() {
     }
   };
 
-  const handleWishlist = async () => {
-    try {
-      const res = await addToWishlist({ user_id: userId, product_id: product.id }).unwrap();
-      setIsWished(true);
-      toast.success(res.message || "❤️ Added to wishlist");
-    } catch (err) {
-      toast.error("❌ Failed to add to wishlist");
-    }
-  };
+  
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumbs */}
       <nav className="text-sm text-gray-500 mb-6">
-        <RouterLink to="/" className="hover:underline">Home</RouterLink> &gt; 
-        <RouterLink 
-          to={`/category/${product.category?.toLowerCase()}`} 
+        <RouterLink to="/" className="hover:underline">Home</RouterLink> &gt;
+        <RouterLink
+          to={`/category/${product.category?.toLowerCase()}`}
           className="hover:underline"
         >
           {" "}{product.category}{" "}
-        </RouterLink> &gt; 
+        </RouterLink> &gt;
         <span className="font-medium text-gray-700">{product.name}</span>
       </nav>
 
@@ -78,9 +117,8 @@ export default function ProductDetail() {
               <button
                 key={i}
                 onClick={() => setActiveImageIndex(i)}
-                className={`border rounded-lg overflow-hidden transition-all duration-200 ${
-                  i === activeImageIndex ? "border-gray-900  ring-gray-900" : "border-gray-200"
-                }`}
+                className={`border rounded-lg overflow-hidden transition-all duration-200 ${i === activeImageIndex ? "border-gray-900  ring-gray-900" : "border-gray-200"
+                  }`}
               >
                 <img
                   src={img.image_url}
@@ -179,8 +217,11 @@ export default function ProductDetail() {
                 onClick={handleWishlist}
                 className="p-3 border rounded-lg text-gray-600 hover:bg-gray-100 transition-colors duration-300"
               >
-                <FiHeart className={`w-6 h-6 ${isWished ? "fill-red-500 stroke-red-500" : ""}`} />
+                <FiHeart
+                  className={`w-6 h-6 ${isWished ? "fill-red-500 stroke-red-500" : ""}`}
+                />
               </button>
+
             </div>
           </div>
         </div>

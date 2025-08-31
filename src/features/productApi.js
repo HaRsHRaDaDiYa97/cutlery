@@ -14,6 +14,13 @@ export const productApi = createApi({
             query: (id) => `get_product.php?id=${id}`,
             providesTags: ["Product"],
         }),
+
+getProductsByIds: builder.query({
+  query: (ids) => `get_products_by_ids.php?ids=${ids.join(",")}`,
+  providesTags: ["Product"],
+}),
+
+
         getProductsByCategorySlug: builder.query({
             query: (slug) => `category_slug.php?category_slug=${slug}`,
             providesTags: ["Product"],
@@ -55,4 +62,5 @@ export const {
     useAddProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
+    useGetProductsByIdsQuery,
 } = productApi;

@@ -32,7 +32,7 @@ const FloatingButtons = () => {
   };
 
   return (
-    <div className="fixed z-10 bottom-6 right-6 flex flex-col gap-3">
+    <div className="fixed z-40 bottom-6 right-6 flex flex-col gap-3">
       {/* WhatsApp Button */}
       <button
         onClick={openWhatsApp}

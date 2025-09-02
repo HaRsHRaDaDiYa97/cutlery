@@ -5,14 +5,12 @@ import { useGetCategoriesQuery } from "../features/categoryApi";
 import { toast } from "react-toastify";
 
 export default function AdminEditProduct() {
-
   const { id } = useParams();
   const navigate = useNavigate();
 
   const { data: product, isLoading, error } = useGetProductQuery(id);
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
-
-  const { data: categoriesData } = useGetCategoriesQuery(); // ✅ RTK Query for categories
+  const { data: categoriesData } = useGetCategoriesQuery();
   const categories = categoriesData?.categories || [];
 
   const [form, setForm] = useState({
@@ -26,9 +24,12 @@ export default function AdminEditProduct() {
     description: "",
   });
 
-  const [images, setImages] = useState([]);
+console.log(product);
+
+
   const [existingImages, setExistingImages] = useState([]);
-  const [primaryIndex, setPrimaryIndex] = useState(0);
+  const [newImages, setNewImages] = useState([]);
+  const [primaryIndex, setPrimaryIndex] = useState(0); // Absolute index among both old + new images
 
   // Populate form when product loads
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function AdminEditProduct() {
         stock: product.stock || "",
         description: product.description || "",
       });
+
       setExistingImages(product.images || []);
       if (product.images?.length > 0) {
         const primaryIdx = product.images.findIndex(
@@ -53,172 +55,235 @@ export default function AdminEditProduct() {
     }
   }, [product]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+const handleChange = (e) => {
+  let value = e.target.value;
+  if (["price","sale_price","stock"].includes(e.target.name)) {
+    value = Number(value);
+  } else if (e.target.name === "category_id") {
+    value = Number(value);
+  }
+  setForm({ ...form, [e.target.name]: value });
+};
+
+
+
+  const handleNewImagesChange = (e) => {
+    if (e.target.files.length > 0) setNewImages(Array.from(e.target.files));
   };
 
-  const handleImageChange = (e) => {
-    if (e.target.files.length > 0) {
-      setImages(Array.from(e.target.files));
+  const handleRemoveExistingImage = (idx) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== idx));
+    if (primaryIndex === idx) setPrimaryIndex(0);
+    else if (primaryIndex > idx) setPrimaryIndex((prev) => prev - 1);
+  };
+
+  const handleRemoveNewImage = (idx) => {
+    setNewImages((prev) => prev.filter((_, i) => i !== idx));
+    if (primaryIndex >= existingImages.length + idx) {
+      setPrimaryIndex(existingImages.length);
     }
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!id) {
+        toast.error("Product ID is required");
+        return;
+    }
+
     const formData = new FormData();
 
+    // Add all form fields
     Object.keys(form).forEach((key) => formData.append(key, form[key]));
+
+    // Append product ID for backend
     formData.append("id", id);
+
+    // Append primary index
     formData.append("primary_index", primaryIndex);
 
-    images.forEach((img) => formData.append("images[]", img));
-    existingImages.forEach((img) =>
-      formData.append("existing_images[]", img.image_url)
-    );
+    // Append new images
+    newImages.forEach((img) => formData.append("images[]", img));
+
+    // Append existing images
+    existingImages.forEach((img) => formData.append("existing_images[]", img.image_url));
 
     try {
-      const res = await updateProduct({ id, formData }).unwrap();
-      if (res.success) {
-        toast.success("Product updated successfully!");
-        navigate("/admin/products");
-      } else {
-        toast.error(res.error || "Failed to update product");
-      }
+        // Send directly FormData
+        const res = await updateProduct(formData).unwrap();
+        if (res.success) {
+            toast.success(res.message || "Product updated successfully!");
+            navigate("/admin/products");
+        } else {
+            toast.error(res.error || "Failed to update product");
+        }
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong!");
+        console.error(err);
+        toast.error("Something went wrong!");
     }
-  };
+};
+
 
   if (isLoading) return <p className="p-6">Loading product...</p>;
   if (error) return <p className="p-6 text-red-500">Failed to load product</p>;
-
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
-          <p className="mt-1 text-sm text-gray-600">Update product details, images, and inventory.</p>
         </header>
+
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Section */}
             <div className="lg:col-span-2 space-y-8">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-800">Product Information</h3>
-                </div>
-                <div className="p-6 space-y-6">
-                  <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Product Name" className="w-full p-3 border rounded-md" />
-                  <input type="text" name="slug" value={form.slug} onChange={handleChange} placeholder="Slug" className="w-full p-3 border rounded-md" />
-                  <textarea name="description" value={form.description} onChange={handleChange} rows={6} className="w-full p-3 border rounded-md" />
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-  <div className="p-6 border-b border-gray-200">
-    <h3 className="text-lg font-semibold text-gray-800">Media</h3>
-  </div>
-  <div className="p-6">
-    {/* Existing Images */}
-    {existingImages.length > 0 && (
-      <div className="mb-6">
-        <p className="text-sm font-medium text-gray-700 mb-2">Current Images</p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-          {existingImages.map((img, i) => (
-            <div key={i} className="relative group">
-              <label
-                className={`cursor-pointer block rounded-lg overflow-hidden ring-2 ${
-                  primaryIndex === i ? "ring-blue-600" : "ring-transparent"
-                }`}
-              >
+              <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
                 <input
-                  type="radio"
-                  name="primary"
-                  checked={primaryIndex === i}
-                  onChange={() => setPrimaryIndex(i)}
-                  className="sr-only"
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Product Name"
+                  className="w-full p-3 border rounded-md"
                 />
-                <img
-                  src={img.image_url}
-                  alt={`Product ${i}`}
-                  className="h-28 w-full object-cover"
+                <input
+                  type="text"
+                  name="slug"
+                  value={form.slug}
+                  onChange={handleChange}
+                  placeholder="Slug"
+                  className="w-full p-3 border rounded-md"
                 />
-              </label>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Upload New Images */}
-    <input
-      id="file-upload"
-      type="file"
-      multiple
-      onChange={handleImageChange}
-    />
-    {images.length > 0 && (
-      <div className="mt-4">
-        <p className="font-medium text-sm text-gray-800 mb-3">New Uploads</p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-          {images.map((img, i) => (
-            <div key={i} className="relative group">
-              <img
-                src={URL.createObjectURL(img)}
-                alt={`Preview ${i}`}
-                className="h-28 w-full object-cover rounded-md"
-              />
-              {/* Cancel Button */}
-              <button
-                type="button"
-                onClick={() =>
-                  setImages((prev) => prev.filter((_, idx) => idx !== i))
-                }
-                className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-
-            </div>
-
-            <div className="lg:col-span-1 space-y-8">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-800">Pricing & Inventory</h3>
-                </div>
-                <div className="p-6 space-y-6">
-                  <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="Price" className="w-full p-3 border rounded-md" />
-                  <input type="number" name="sale_price" value={form.sale_price} onChange={handleChange} placeholder="Sale Price" className="w-full p-3 border rounded-md" />
-                  <input type="number" name="stock" value={form.stock} onChange={handleChange} placeholder="Stock" className="w-full p-3 border rounded-md" />
-                </div>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={6}
+                  className="w-full p-3 border rounded-md"
+                  placeholder="Description"
+                />
               </div>
 
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-800">Organization</h3>
+              {/* Images */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <p className="text-sm font-medium text-gray-700 mb-2">Existing Images</p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                  {existingImages.map((img, i) => (
+                    <div key={i} className="relative">
+                      <img
+                        src={img.image_url}
+                        alt={`Existing ${i}`}
+                        className="h-28 w-full object-cover rounded-md"
+                      />
+                      <input
+                        type="radio"
+                        name="primary"
+                        checked={primaryIndex === i}
+                        onChange={() => setPrimaryIndex(i)}
+                        className="absolute top-1 left-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(i)}
+                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div className="p-6">
-                  <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                  <select name="category_id" value={form.category_id} onChange={handleChange} className="w-full p-3 border rounded-md">
-                    <option value="">-- Select Category --</option>
-                    {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                  </select>
-                </div>
+
+                <p className="mt-4 text-sm font-medium text-gray-700 mb-2">Upload New Images</p>
+                <input type="file" multiple onChange={handleNewImagesChange} />
+                {newImages.length > 0 && (
+                  <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                    {newImages.map((img, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={URL.createObjectURL(img)}
+                          alt={`New ${i}`}
+                          className="h-28 w-full object-cover rounded-md"
+                        />
+                        <input
+                          type="radio"
+                          name="primary"
+                          checked={primaryIndex === existingImages.length + i}
+                          onChange={() => setPrimaryIndex(existingImages.length + i)}
+                          className="absolute top-1 left-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewImage(i)}
+                          className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Section */}
+            <div className="lg:col-span-1 space-y-8">
+              <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
+                <input
+                  type="number"
+                  name="price"
+                  value={form.price}
+                  onChange={handleChange}
+                  placeholder="Price"
+                  className="w-full p-3 border rounded-md"
+                />
+                <input
+                  type="number"
+                  name="sale_price"
+                  value={form.sale_price}
+                  onChange={handleChange}
+                  placeholder="Sale Price"
+                  className="w-full p-3 border rounded-md"
+                />
+                <input
+                  type="number"
+                  name="stock"
+                  value={form.stock}
+                  onChange={handleChange}
+                  placeholder="Stock"
+                  className="w-full p-3 border rounded-md"
+                />
+
+                <label className="block text-sm font-medium mt-4">Category</label>
+                <select
+                  name="category_id"
+                  value={form.category_id}
+                  onChange={handleChange}
+                  className="w-full p-3 border rounded-md"
+                >
+                  <option value="">-- Select Category --</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t flex justify-end gap-4">
-            <button type="button" className="px-6 py-2.5 cursor-pointer bg-white border rounded-md" onClick={() => navigate("/admin/products")}>Cancel</button>
-            <button type="submit" className="px-6 py-2.5 cursor-pointer bg-blue-600 text-white rounded-md">Update Changes</button>
+          <div className="mt-6 flex justify-end gap-4">
+            <button
+              type="button"
+              className="px-6 py-2.5 border rounded-md"
+              onClick={() => navigate("/admin/products")}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="px-6 py-2.5 bg-blue-600 text-white rounded-md">
+              {isUpdating ? "Updating..." : "Update Product"}
+            </button>
           </div>
         </form>
       </div>

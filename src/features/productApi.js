@@ -15,10 +15,10 @@ export const productApi = createApi({
             providesTags: ["Product"],
         }),
 
-getProductsByIds: builder.query({
-  query: (ids) => `get_products_by_ids.php?ids=${ids.join(",")}`,
-  providesTags: ["Product"],
-}),
+        getProductsByIds: builder.query({
+            query: (ids) => `get_products_by_ids.php?ids=${ids.join(",")}`,
+            providesTags: ["Product"],
+        }),
 
 
         getProductsByCategorySlug: builder.query({
@@ -34,14 +34,15 @@ getProductsByIds: builder.query({
             invalidatesTags: ["Product"],
         }),
         updateProduct: builder.mutation({
-            query: ({ id, formData }) => ({
-                url: `update_product.php?id=${id}`,
+            query: (formData) => ({
+                url: "update_product.php", // send directly, no ?id=...
                 method: "POST",
-                body: formData,
+                body: formData, // FormData must include id
             }),
             invalidatesTags: ["Product"],
         }),
-       
+
+
         deleteProduct: builder.mutation({
             query: (id) => ({
                 url: "delete_product.php",

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
@@ -5,28 +6,44 @@ import { toast } from "react-toastify";
 import { useGetProductQuery } from "../features/productApi";
 import { useAddToWishlistMutation, useGetWishlistQuery, useRemoveFromWishlistMutation } from "../features/wishlistApi";
 import { useSelector } from "react-redux";
+import { useAddToCartMutation, useGetCartQuery } from "../features/cartApi";
+import ReviewSection from "../components/ReviewSection";
 
 export default function ProductDetail() {
+ 
+ 
+  const [isInCart, setIsInCart] = useState(false);
+ 
   const { id } = useParams();
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-
   const userId = useSelector((state) => state.auth.user?.id);
 
-  const { data: wishlistData } = useGetWishlistQuery(userId, {
-    skip: !userId,
-  });
-
-  const { data: product, isLoading, isError } = useGetProductQuery(id);
-
-
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [isWished, setIsWished] = useState(false);
+
+  // ✅ API hooks
+  const { data: product, isLoading, isError } = useGetProductQuery(id);
+  const { data: cartData } = useGetCartQuery(userId, { skip: !userId });
+  const { data: wishlistData } = useGetWishlistQuery(userId, { skip: !userId });
+
+  const [addToCart] = useAddToCartMutation();
   const [addToWishlist] = useAddToWishlistMutation();
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
-useEffect(() => {
-  if (!product || !wishlistData || !Array.isArray(wishlistData)) return;
 
+useEffect(() => {
+  if (!product || !Array.isArray(cartData?.items)) return;
+
+  const found = cartData.items.some(
+    (item) => Number(item.product_id) === Number(product.id)
+  );
+  setIsInCart(found);
+}, [product, cartData]);
+
+
+// ✅ Sync isWished when wishlistData or product changes
+useEffect(() => {
+  if (!product || !Array.isArray(wishlistData)) return;
   const found = wishlistData.some(
     (item) => Number(item.product_id) === Number(product.id)
   );
@@ -35,12 +52,37 @@ useEffect(() => {
 
 
 
+
+  // ✅ Scroll to top on product change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  // ✅ Handlers
+  const handleAddToCart = async () => {
+    if (!userId) {
+      toast.error("Please login to add items to cart");
+      return;
+    }
+    try {
+      const res = await addToCart({
+        user_id: userId,
+        product_id: product.id,
+        quantity,
+      }).unwrap();
+      toast.success(res.message || "✅ Product added to cart!");
+        setIsInCart(true);
+    } catch (err) {
+      console.error("Add to Cart API error:", err);
+      toast.error("❌ Failed to add to cart");
+    }
+  };
+
   const handleWishlist = async () => {
     if (!userId) {
       toast.error("Please login to use wishlist");
       return;
     }
-
     try {
       if (!isWished) {
         await addToWishlist({ user_id: userId, product_id: product.id }).unwrap();
@@ -57,22 +99,6 @@ useEffect(() => {
     }
   };
 
-
-
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  if (isLoading) return <div className="text-center">Loading...</div>;
-  if (isError) return <div className="text-center text-red-600">Failed to load product</div>;
-  if (!product) return null;
-
-  const onSale = product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price);
-  const discountPercent = onSale
-    ? Math.round(((product.price - product.sale_price) / product.price) * 100)
-    : 0;
-
   const handleQuantityChange = (amount) => {
     setQuantity((prev) => {
       const newQty = prev + amount;
@@ -82,16 +108,20 @@ useEffect(() => {
     });
   };
 
-  const handleAddToCart = async () => {
-    try {
-      const res = await addToCart({ user_id: userId, product_id: product.id, quantity }).unwrap();
-      toast.success(res.message || "✅ Product added to cart!");
-    } catch (err) {
-      toast.error("❌ Failed to add to cart");
-    }
+  const handleBuyNow = () => {
+    window.location.href = "/cart"; // or navigate("/checkout") if using react-router
   };
 
-  
+  // ✅ UI states
+  if (isLoading) return <div className="text-center">Loading...</div>;
+  if (isError) return <div className="text-center text-red-600">Failed to load product</div>;
+  if (!product) return null;
+
+  const onSale =
+    product.sale_price && parseFloat(product.sale_price) < parseFloat(product.price);
+  const discountPercent = onSale
+    ? Math.round(((product.price - product.sale_price) / product.price) * 100)
+    : 0;
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -110,7 +140,7 @@ useEffect(() => {
       {/* Main Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Left: Product Images */}
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-6 lg:sticky lg:top-20 lg:max-h-[80vh] lg:overflow-y-auto">
           {/* Thumbnails */}
           <div className="flex md:flex-col gap-3 md:w-24 order-2 md:order-1">
             {product.images?.map((img, i) => (
@@ -130,7 +160,8 @@ useEffect(() => {
           </div>
 
           {/* Main Image */}
-          <div className="flex-1 relative order-1 md:order-2">
+         <div className="flex-1 order-1 md:order-2 relative  lg:sticky lg:top-20 lg:max-h-[80vh] lg:overflow-y-auto">
+  
             {onSale && (
               <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                 SALE
@@ -207,12 +238,21 @@ useEffect(() => {
 
             {/* Buttons */}
             <div className="flex items-center gap-4">
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-300"
-              >
-                Add to Cart
-              </button>
+              {!isInCart ? (
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-300"
+                >
+                  Add to Cart
+                </button>
+              ) : (
+                <button
+                  onClick={handleBuyNow}
+                  className="flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-500 transition-colors duration-300"
+                >
+                  Buy Now
+                </button>
+              )}
               <button
                 onClick={handleWishlist}
                 className="p-3 border rounded-lg text-gray-600 hover:bg-gray-100 transition-colors duration-300"
@@ -226,6 +266,15 @@ useEffect(() => {
           </div>
         </div>
       </div>
+
+
+
+{/* 🔹 Review Section */}
+    <div className="mt-12">
+      <ReviewSection productId={product.id} />
+    </div>
+
+
     </div>
   );
 }

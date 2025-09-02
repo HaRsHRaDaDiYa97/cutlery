@@ -8,6 +8,8 @@ import { productApi } from "../features/productApi";
 import { authApi } from "../features/authApi";
 import { wishlistApi } from "../features/wishlistApi";
 import authReducer from "./slice/authSlice";
+import { cartApi } from "../features/cartApi";
+import { reviewApi } from "../features/reviewApi";
 
 // Persist config
 const persistConfig = {
@@ -21,6 +23,8 @@ const rootReducer = combineReducers({
   [productApi.reducerPath]: productApi.reducer,
   [authApi.reducerPath]: authApi.reducer,
   [wishlistApi.reducerPath]: wishlistApi.reducer,
+  [cartApi.reducerPath]: cartApi.reducer,
+  [reviewApi.reducerPath]: reviewApi.reducer, 
   auth: authReducer,
 });
 
@@ -35,7 +39,9 @@ export const store = configureStore({
       categoryApi.middleware,
       productApi.middleware,
       wishlistApi.middleware,
-      authApi.middleware
+      authApi.middleware,
+      cartApi.middleware,
+      reviewApi.middleware    // ✅ add middleware
     ),
 });
 

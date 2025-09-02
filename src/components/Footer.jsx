@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 const mainMenuLinks = [
   { name: "Home", to: "/" },
   { name: "Products", to: "/products" },
-  { name: "Wishlist", to: "/wishlist" },
+  { name: "Contact Us", to: "/contact" },
+  { name: "About Us", to: "/about" },
 ];
 
 const policiesLinks = [

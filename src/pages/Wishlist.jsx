@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AiOutlineHeart } from "react-icons/ai";
@@ -6,33 +7,62 @@ import { useGetWishlistQuery } from "../features/wishlistApi";
 import ProductCard from "../components/ProductCard";
 import { API_BASE } from "../api";
 
+// A simple spinner component for loading states
+const Spinner = () => (
+  <svg
+    className="animate-spin h-8 w-8 text-gray-600"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
+
 const WishlistPage = () => {
+  // --- All your existing logic remains unchanged ---
   const userId = useSelector((state) => state.auth.user?.id);
 
-  const { data: wishlistData = [], isLoading, isError } = useGetWishlistQuery(userId, {
+  const {
+    data: wishlistData = [],
+    isLoading,
+    isError,
+  } = useGetWishlistQuery(userId, {
     skip: !userId,
   });
-
-
 
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
-  // 🔹 Fetch products for wishlist
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!wishlistData.length) return;
+      if (!wishlistData.length) {
+        setProducts([]); // Clear products if wishlist is empty
+        return;
+      }
 
       setLoadingProducts(true);
       try {
         const responses = await Promise.all(
           wishlistData.map((w) =>
-            fetch(`${API_BASE}/get_product.php?id=${w.product_id}`).then((res) =>
-              res.json()
+            fetch(`${API_BASE}/get_product.php?id=${w.product_id}`).then(
+              (res) => res.json()
             )
           )
         );
-        setProducts(responses);
+        setProducts(responses.filter(p => p)); // Filter out any null/error responses
       } catch (err) {
         console.error("Error fetching wishlist products:", err);
       } finally {
@@ -42,89 +72,121 @@ const WishlistPage = () => {
 
     fetchProducts();
   }, [wishlistData]);
+  // --- End of logic section ---
 
+  // Centered container for various states (Login, Loading, Error)
+  const StateDisplay = ({ icon, title, message, children }) => (
+    <div className="flex min-h-[60vh] items-center justify-center bg-gray-50">
+      <div className="text-center p-8">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-200">
+          {icon}
+        </div>
+        <h2 className="mt-4 text-xl font-semibold text-gray-800">{title}</h2>
+        <p className="mt-2 text-gray-600">{message}</p>
+        {children && <div className="mt-6">{children}</div>}
+      </div>
+    </div>
+  );
 
-
-
-  // 🔹 User not logged in
   if (!userId) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <p className="text-lg text-gray-700">Please log in to view your wishlist.</p>
-      </div>
+      <StateDisplay
+        icon={<AiOutlineHeart className="h-6 w-6 text-gray-500" />}
+        title="View Your Wishlist"
+        message="Please log in to see the items you've saved."
+      />
     );
   }
 
-  // 🔹 Loading states
   if (isLoading || loadingProducts) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <p className="text-gray-500">Loading your wishlist...</p>
-      </div>
+      <StateDisplay
+        icon={<Spinner />}
+        title="Loading Your Wishlist..."
+        message="We're fetching your favorite items."
+      />
     );
   }
 
   if (isError) {
     return (
-      <div className="container mx-auto px-4 py-10 text-center">
-        <p className="text-red-500">Failed to load wishlist. Please try again later.</p>
-      </div>
+      <StateDisplay
+        icon={<AiOutlineHeart className="h-6 w-6 text-red-500" />}
+        title="Something Went Wrong"
+        message="We couldn't load your wishlist. Please try again later."
+      />
     );
   }
 
   return (
-    <div className="min-h-screen container mx-auto px-4 py-10">
-      {/* Page Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <AiOutlineHeart className="text-red-500" size={24} /> My Wishlist
-        </h1>
-        <p className="text-gray-600">{wishlistData.length} item(s)</p>
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6  lg:max-w-7xl lg:px-8">
+        {/* Page Header */}
+        <div className="border-b border-gray-200 pb-4 mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            My Wishlist
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            {wishlistData.length} item(s) saved
+          </p>
+        </div>
+
+        {/* Empty State */}
+        {wishlistData.length === 0 ? (
+          <div className="text-center py-20 px-6 rounded-lg bg-gray-50">
+            <AiOutlineHeart
+              size={48}
+              className="mx-auto text-gray-400"
+              aria-hidden="true"
+            />
+            <h2 className="mt-4 text-xl font-semibold text-gray-900">
+              Your wishlist is currently empty
+            </h2>
+            <p className="mt-2 text-base text-gray-600">
+              Looks like you haven't added anything yet. Let's find something
+              you'll love!
+            </p>
+            <Link
+              to="/products"
+              className="mt-6 inline-block rounded-md border border-transparent bg-black px-6 py-3 text-base font-medium text-white shadow-sm transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+            >
+              Browse Products
+            </Link>
+          </div>
+        ) : (
+          /* Wishlist Grid */
+          <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+            {products.map((product) => {
+              if (!product) return null; // Safety check for failed fetches
+
+              const primaryImage =
+                product.images?.find((img) => img.is_primary === 1)?.image_url ||
+                product.images?.[0]?.image_url ||
+                ""; // Default placeholder if needed
+
+              return (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.id}`}
+                  className="group"
+                >
+                  <ProductCard
+                    id={product.id}
+                    imageUrl={primaryImage}
+                    category={product.category}
+                    title={product.name}
+                    price={product.price}
+                    salePrice={product.sale_price}
+                    wishlistData={wishlistData}
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
-
-      {/* Empty State */}
-      {wishlistData.length === 0 ? (
-        <div className="text-center py-20">
-          <AiOutlineHeart size={50} className="mx-auto text-gray-400" />
-          <p className="mt-4 text-lg text-gray-600">Your wishlist is empty.</p>
-          <Link
-            to="/products"
-            className="mt-6 inline-block rounded-lg bg-blue-600 px-6 py-2 text-white shadow hover:bg-blue-700 transition"
-          >
-            Browse Products
-          </Link>
-        </div>
-      ) : (
-        /* Wishlist Grid */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => {
-  // get primary image (or first fallback)
-  const primaryImage = product.images?.find(img => img.is_primary === 1)?.image_url 
-                       || product.images?.[0]?.image_url 
-                       || "";
-
-  return (
-    <Link key={product.id} to={`/product/${product.id}`}>
-      <ProductCard
-        id={product.id}
-        imageUrl={primaryImage} // ✅ fixed
-        category={product.category}
-        title={product.name}
-        price={product.price}
-        salePrice={product.sale_price}
-        wishlistData={wishlistData}
-      />
-    </Link>
-  );
-})}
-
-        </div>
-      )}
     </div>
   );
 };
 
 export default WishlistPage;
-
-
-

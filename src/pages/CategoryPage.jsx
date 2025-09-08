@@ -1,280 +1,197 @@
-// import React, { useEffect, useState } from "react";
-// import { useParams, Link } from "react-router-dom";
-// import axios from "axios";
-// import { API_BASE } from "../api";
-// import ProductCard from "../components/ProductCard";
-// import { useGetProductsByCategorySlugQuery } from "../features/productApi";
-// import FilterSidebar from "../components/FilterSidebar";
-// import { useSelector } from "react-redux";
-// import { useGetWishlistQuery } from "../features/wishlistApi";
 
-// const CategoryPage = () => {
-
-// const { slug } = useParams();
-//   const [filters, setFilters] = useState({
-//     availability: [],
-//     price: { min: 0, max: 100000 },
-//     categories: [],
-//   });
-//   const [products, setProducts] = useState([]);
-//   const [allProducts, setAllProducts] = useState([]);
-
-
-// const userId = useSelector((state) => state.auth.user?.id);
-
-
-//   const { data: wishlistData, error,  isFetching } = useGetWishlistQuery(userId, {
-//     skip: !userId, // ✅ skip API call if not logged in
-//   });
-
-
-
-
-//   // RTK Query
-//   const { data: fetchedProducts, isLoading, isError } =
-//     useGetProductsByCategorySlugQuery(slug);
-
-//   // Update state when fetchedProducts changes
-//   useEffect(() => {
-//     if (Array.isArray(fetchedProducts)) {
-//       setAllProducts(fetchedProducts);
-//       setProducts(fetchedProducts);
-//     } else {
-//       setAllProducts([]);
-//       setProducts([]);
-//     }
-//   }, [fetchedProducts]);
-
-//   // Apply filters
-//   useEffect(() => {
-//     const filtered = allProducts.filter((p) => {
-//       const availabilityMatch =
-//         filters.availability.length === 0 ||
-//         (filters.availability.includes("in-stock") && p.stock > 0) ||
-//         (filters.availability.includes("out-of-stock") && p.stock === 0);
-
-//       const effectivePrice = p.sale_price ? Number(p.sale_price) : Number(p.price);
-//       const priceMatch = effectivePrice >= filters.price.min && effectivePrice <= filters.price.max;
-
-//       return availabilityMatch && priceMatch;
-//     });
-//     setProducts(filtered);
-//   }, [filters, allProducts]);
-
-//   if (isLoading) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <p>Loading...</p>
-//       </div>
-//     );
-//   }
-
-//   if (isError) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <p className="text-red-600">Failed to load products.</p>
-//       </div>
-//     );
-//   }
-
-
-//   return (
-//     <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//       {/* Breadcrumb */}
-//       <nav className="text-sm text-gray-500 mb-4">
-//         <Link to="/" className="hover:underline">
-//           Home
-//         </Link>{" "}
-//         &gt;{" "}
-//         <span className="font-medium text-gray-700">{slug}</span>
-//       </nav>
-
-//       {/* Category Title */}
-//       <h1 className="text-3xl text-center font-bold text-gray-900 mb-8">
-//         {slug.charAt(0).toUpperCase() + slug.slice(1)} Products
-//       </h1>
-
-//       <div className="flex flex-col lg:flex-row gap-8">
-//         {/* Filters */}
-//         <FilterSidebar filters={filters} setFilters={setFilters} />
-
-//         {/* Products */}
-//         <main className="w-full lg:w-3/4">
-//           {products.length > 0 ? (
-//             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-//               {products.map((p) => (
-//                 <Link key={p.id} to={`/product/${p.id}`}>
-//                   <ProductCard
-//                     key={p.id}
-//                     id={p.id}          // ✅ important!
-//                    imageUrl={
-//                       p.image_url ? `${API_BASE}/${p.image_url}` : "/placeholder.png"
-//                     }
-//                     category={p.category}
-//                     title={p.name}
-//                     price={p.price}
-//                     salePrice={p.sale_price}
-//                     wishlistData={wishlistData}
-//                   />
-//                 </Link>
-//               ))}
-//             </div>
-//           ) : (
-//             <p className="text-gray-500">No products match the selected filters.</p>
-//           )}
-//         </main>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default CategoryPage;
-
-
-
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_BASE } from "../api";
 import ProductCard from "../components/ProductCard";
 import FilterSidebar from "../components/FilterSidebar";
 import { useSelector } from "react-redux";
 import { useGetWishlistQuery } from "../features/wishlistApi";
-import { useGetProductsByCategorySlugQuery } from "../features/productApi";
-import { FiFilter, FiX } from "react-icons/fi";
+import { FiChevronRight, FiSearch, FiFilter, FiX, FiInbox } from "react-icons/fi";
+import Pagination from "../components/Pagination";
 
-const CategoryPage = () => {
+// small debounce hook to avoid spamming API on search typing
+function useDebounced(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+export default function CategoryPage() {
   const { slug } = useParams();
 
+  // filters aligned with Products.jsx
   const [filters, setFilters] = useState({
     availability: [],
     price: { min: 0, max: 100000 },
-    categories: [],
+    categories: [], // (not used in category page, but harmless)
   });
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [products, setProducts] = useState([]);
-  const [allProducts, setAllProducts] = useState([]);
+  const debouncedSearch = useDebounced(searchQuery, 300);
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 9;
 
   const userId = useSelector((state) => state.auth.user?.id);
   const { data: wishlistData } = useGetWishlistQuery(userId, { skip: !userId });
 
-  const { data: fetchedProducts, isLoading, isError } =
-    useGetProductsByCategorySlugQuery(slug);
+  const title = useMemo(() => {
+    if (!slug) return "Products";
+    return `${slug.charAt(0).toUpperCase()}${slug.slice(1)} Products`;
+  }, [slug]);
 
-  useEffect(() => {
-    if (Array.isArray(fetchedProducts)) {
-      setAllProducts(fetchedProducts);
-      setProducts(fetchedProducts);
-    } else {
-      setAllProducts([]);
+  const fetchProducts = async (pageNum) => {
+    try {
+      const params = new URLSearchParams({
+        category_slug: slug,
+        page: pageNum,
+        limit: itemsPerPage,
+      });
+
+      if (debouncedSearch) params.append("search", debouncedSearch);
+      if (filters.availability.length > 0)
+        params.append("availability", filters.availability.join(","));
+      if (filters.price.min !== 0) params.append("minPrice", filters.price.min);
+      if (filters.price.max !== 100000) params.append("maxPrice", filters.price.max);
+
+      const res = await fetch(`${API_BASE}/category_slug.php?${params.toString()}`);
+      const data = await res.json();
+
+      setProducts(Array.isArray(data.products) ? data.products : []);
+      setTotal(Number.isFinite(data.total) ? data.total : 0);
+    } catch (err) {
+      console.error("Fetch error:", err);
       setProducts([]);
+      setTotal(0);
     }
-  }, [fetchedProducts]);
+  };
 
+
+  // fetch on page/filters/search/slug changes
   useEffect(() => {
-    const filtered = allProducts.filter((p) => {
-      const availabilityMatch =
-        filters.availability.length === 0 ||
-        (filters.availability.includes("in-stock") && p.stock > 0) ||
-        (filters.availability.includes("out-of-stock") && p.stock === 0);
+    fetchProducts(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch, filters, slug]);
 
-      const effectivePrice = p.sale_price ? Number(p.sale_price) : Number(p.price);
-      const priceMatch =
-        effectivePrice >= filters.price.min && effectivePrice <= filters.price.max;
+  // reset to page 1 when filters/search/slug change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, filters, slug]);
 
-      return availabilityMatch && priceMatch;
-    });
-    setProducts(filtered);
-  }, [filters, allProducts]);
-
+  const totalPages = Math.ceil(total / itemsPerPage);
   const handleApplyFilters = () => setIsFilterOpen(false);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">Failed to load products.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500 mb-4">
-        <Link to="/" className="hover:underline">Home</Link> &gt;{" "}
-        <span className="font-medium text-gray-700">{slug}</span>
-      </nav>
-
-      {/* Category Title */}
-      <h1 className="text-3xl text-center font-bold text-gray-900 mb-8">
-        {slug.charAt(0).toUpperCase() + slug.slice(1)} Products
-      </h1>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* --- Mobile Filter Button --- */}
-        <div className="lg:hidden flex justify-end mb-4">
-          <button
-            onClick={() => setIsFilterOpen(true)}
-            className="flex items-center gap-2 rounded-md bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
-          >
-            <FiFilter size={18} />
-            Filter
-          </button>
+    <div className="bg-white min-h-screen relative">
+      <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-6 mb-8">
+          <nav className="flex items-center text-sm text-gray-500">
+            <Link to="/" className="hover:text-gray-700">Home</Link>
+            <FiChevronRight className="mx-2 h-4 w-4" />
+            <span className="font-medium text-gray-800">
+              {slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Products"}
+            </span>
+          </nav>
+          <h1 className="mt-4 text-4xl font-bold tracking-tight text-gray-900">
+            {title}
+          </h1>
         </div>
 
-        {/* Desktop Filters */}
-        <aside className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-          <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <FilterSidebar filters={filters} setFilters={setFilters} />
-          </div>
-        </aside>
+       {/* Mobile Filter Button (sticky after title scrolls) */}
+       <div className="lg:hidden sticky top-20 z-30 bg-transparent  py-2 mb-4">
+         <div className="flex justify-end">
+           <button
+             onClick={() => setIsFilterOpen(true)}
+             className="flex items-center gap-2 rounded-md bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800"
+           >
+             <FiFilter size={18} /> Filter
+           </button>
+         </div>
+       </div>
 
-        {/* Products */}
-        <main className="w-full lg:w-3/4">
-          {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((p) => (
-                <Link key={p.id} to={`/product/${p.id}`}>
-                  <ProductCard
-                    id={p.id}
-                    imageUrl={p.image_url ? `${API_BASE}/${p.image_url}` : "/placeholder.png"}
-                    category={p.category}
-                    title={p.name}
-                    price={p.price}
-                    salePrice={p.sale_price}
-                    wishlistData={wishlistData}
-                  />
-                </Link>
-              ))}
+
+        <div className="flex flex-col lg:flex-row gap-x-8 gap-y-10">
+          {/* Sidebar (desktop) */}
+          <aside className="lg:w-64 lg:flex-shrink-0">
+            {/* Search */}
+            <div className="mb-6 relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <FiSearch className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="search"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full rounded-md border-gray-300 bg-gray-50 py-2 pl-10 pr-3 text-sm focus:border-black focus:ring-1 focus:ring-black"
+              />
             </div>
-          ) : (
-            <p className="text-gray-500">No products match the selected filters.</p>
-          )}
-        </main>
+
+            {/* Filters (desktop sticky) */}
+            <div className="hidden lg:block lg:sticky lg:top-20 lg:max-h-[80vh] lg:overflow-y-auto p-6 bg-gray-50 rounded-lg border border-gray-200">
+              <FilterSidebar filters={filters} setFilters={setFilters} />
+            </div>
+          </aside>
+
+          {/* Products */}
+          <main className="flex-1">
+            {products.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+                  {products.map((p) => (
+                    <Link key={p.id} to={`/product/${p.id}`}>
+                      <ProductCard
+                        id={p.id}
+                        imageUrl={p.image || "/placeholder.png"}
+                        category={p.category}
+                        title={p.name}
+                        price={p.price}
+                        salePrice={p.sale_price}
+                        wishlistData={wishlistData}
+                      />
+                    </Link>
+                  ))}
+                </div>
+
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={(p) => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    setPage(p);
+                  }}
+                />
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center py-20 px-6 rounded-lg bg-gray-50 border-2 border-dashed border-gray-200">
+                <FiInbox size={48} className="mx-auto text-gray-400" />
+                <h2 className="mt-4 text-xl font-semibold text-gray-900">
+                  No Products Found
+                </h2>
+                <p className="mt-2 text-base text-gray-600">
+                  Try adjusting your search or filter criteria.
+                </p>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
 
-      {/* --- Mobile Filter Drawer --- */}
-      <div className={`fixed inset-0 z-50 transition-all duration-300 ${isFilterOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
-        {/* Overlay */}
+      {/* Mobile Drawer (filters) */}
+      <div className={`fixed inset-0 z-50 ${isFilterOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
         <div
           className={`fixed inset-0 bg-black transition-opacity duration-300 ${isFilterOpen ? "opacity-50" : "opacity-0"}`}
           onClick={() => setIsFilterOpen(false)}
-        ></div>
-
-        {/* Drawer */}
+        />
         <div
-          className={`relative ml-auto w-80 bg-white h-full p-6 shadow-lg overflow-y-auto transform transition-transform duration-300 ease-in-out ${isFilterOpen ? "translate-x-0" : "translate-x-full"}`}
+          className={`relative ml-auto w-80 bg-white h-full p-6 shadow-lg overflow-y-auto transform transition-transform duration-300 ${isFilterOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-gray-900">Filters</h2>
@@ -284,7 +201,7 @@ const CategoryPage = () => {
           </div>
           <FilterSidebar filters={filters} setFilters={setFilters} />
           <button
-            onClick={handleApplyFilters}
+            onClick={() => setIsFilterOpen(false)}
             className="mt-4 w-full bg-black text-white py-2 rounded-md hover:bg-gray-800"
           >
             Apply Filters
@@ -293,6 +210,4 @@ const CategoryPage = () => {
       </div>
     </div>
   );
-};
-
-export default CategoryPage;
+}

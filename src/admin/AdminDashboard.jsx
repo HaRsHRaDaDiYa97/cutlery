@@ -28,11 +28,14 @@ const AdminDashboard = () => {
   const { data: categoryData, isLoading: categoriesLoading } = useGetCategoriesQuery();
   const { data: reviewsData, isLoading: reviewsLoading } = useGetAllReviewsQuery();
 
-  const products = productsData || [];
+const products = productsData?.products || [];
+
   const categories = categoryData?.categories || [];
   const reviews = reviewsData || [];
   const isLoading = productsLoading || categoriesLoading || reviewsLoading;
   // --- End of logic section ---
+
+
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',

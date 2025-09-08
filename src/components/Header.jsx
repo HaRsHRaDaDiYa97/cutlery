@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AiOutlineHeart } from 'react-icons/ai';
 import { useGetCartQuery } from '../features/cartApi';
 // Make sure you have a 'logout' action in your authSlice
-// import { logout } from '../features/authSlice';
+import { logout } from '../app/slice/authSlice';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,13 +30,13 @@ const Header = () => {
   const navigate = useNavigate();
 
   // NOTE: You need to create and export this 'logout' action from your authSlice
-  const handleLogout = () => {
-    // dispatch(logout());
-    console.log("Logout action dispatched"); // Placeholder
-    setIsProfileMenuOpen(false);
-    setIsMenuOpen(false);
-    navigate('/login');
-  };
+const handleLogout = () => {
+  dispatch(logout());       // Clear Redux state and localStorage
+  setIsProfileMenuOpen(false);
+  setIsMenuOpen(false);
+  navigate('/login');       // Redirect to login page
+};
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -49,7 +49,7 @@ const Header = () => {
   }, []);
 
   const IconBtn = ({ to, onClick, ariaLabel, children }) => {
-    const classes = "relative p-2 text-gray-600 transition-colors rounded-full hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2";
+    const classes = "relative cursor-pointer p-2 text-gray-600 transition-colors rounded-full hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2";
     if (to) return <Link to={to} aria-label={ariaLabel} className={classes}>{children}</Link>;
     return <button onClick={onClick} aria-label={ariaLabel} className={classes}>{children}</button>;
   };
@@ -99,6 +99,7 @@ const Header = () => {
               <IconBtn
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 ariaLabel="Open user menu"
+                
               >
                 <FiUser />
               </IconBtn>
@@ -119,8 +120,8 @@ const Header = () => {
                     </>
                   ) : (
                     <>
-                      <ProfileMenuItem to="/login">Sign In</ProfileMenuItem>
-                      <ProfileMenuItem to="/register">Create Account</ProfileMenuItem>
+                      <ProfileMenuItem to="/login">Login</ProfileMenuItem>
+                      <ProfileMenuItem to="/signup">Create Account</ProfileMenuItem>
                     </>
                   )}
                 </div>
@@ -170,7 +171,7 @@ const Header = () => {
                   Log In
                 </Link>
                 <div className="mt-4 text-center text-sm">
-                  <p className="text-gray-600">New customer? <Link to="/register" onClick={() => setIsMenuOpen(false)} className="font-medium text-black hover:underline">Create an account</Link></p>
+                  <p className="text-gray-600">New customer? <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="font-medium text-black hover:underline">Create an account</Link></p>
                 </div>
               </div>
             )}

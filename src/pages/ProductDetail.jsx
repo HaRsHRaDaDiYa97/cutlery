@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, Link as RouterLink } from "react-router-dom";
+import { useParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import { FiHeart, FiPlus, FiMinus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useGetProductQuery } from "../features/productApi";
@@ -10,10 +10,10 @@ import { useAddToCartMutation, useGetCartQuery } from "../features/cartApi";
 import ReviewSection from "../components/ReviewSection";
 
 export default function ProductDetail() {
- 
- 
+
+
   const [isInCart, setIsInCart] = useState(false);
- 
+
   const { id } = useParams();
   const userId = useSelector((state) => state.auth.user?.id);
 
@@ -31,24 +31,26 @@ export default function ProductDetail() {
   const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
 
-useEffect(() => {
-  if (!product || !Array.isArray(cartData?.items)) return;
+const navigate = useNavigate();
 
-  const found = cartData.items.some(
-    (item) => Number(item.product_id) === Number(product.id)
-  );
-  setIsInCart(found);
-}, [product, cartData]);
+  useEffect(() => {
+    if (!product || !Array.isArray(cartData?.items)) return;
+
+    const found = cartData.items.some(
+      (item) => Number(item.product_id) === Number(product.id)
+    );
+    setIsInCart(found);
+  }, [product, cartData]);
 
 
-// ✅ Sync isWished when wishlistData or product changes
-useEffect(() => {
-  if (!product || !Array.isArray(wishlistData)) return;
-  const found = wishlistData.some(
-    (item) => Number(item.product_id) === Number(product.id)
-  );
-  setIsWished(found);
-}, [wishlistData, product]);
+  // ✅ Sync isWished when wishlistData or product changes
+  useEffect(() => {
+    if (!product || !Array.isArray(wishlistData)) return;
+    const found = wishlistData.some(
+      (item) => Number(item.product_id) === Number(product.id)
+    );
+    setIsWished(found);
+  }, [wishlistData, product]);
 
 
 
@@ -62,6 +64,7 @@ useEffect(() => {
   const handleAddToCart = async () => {
     if (!userId) {
       toast.error("Please login to add items to cart");
+      navigate('/login');
       return;
     }
     try {
@@ -71,7 +74,7 @@ useEffect(() => {
         quantity,
       }).unwrap();
       toast.success(res.message || "✅ Product added to cart!");
-        setIsInCart(true);
+      setIsInCart(true);
     } catch (err) {
       console.error("Add to Cart API error:", err);
       toast.error("❌ Failed to add to cart");
@@ -81,6 +84,7 @@ useEffect(() => {
   const handleWishlist = async () => {
     if (!userId) {
       toast.error("Please login to use wishlist");
+      navigate('/login');
       return;
     }
     try {
@@ -160,8 +164,8 @@ useEffect(() => {
           </div>
 
           {/* Main Image */}
-         <div className="flex-1 order-1 md:order-2 relative  lg:sticky lg:top-20 lg:max-h-[80vh] lg:overflow-y-auto">
-  
+          <div className="flex-1 order-1 md:order-2 relative  lg:sticky lg:top-20 lg:max-h-[80vh] lg:overflow-y-auto">
+
             {onSale && (
               <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                 SALE
@@ -178,7 +182,7 @@ useEffect(() => {
         {/* Right: Product Info */}
         <div>
           {/* Title */}
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">{product.name}</h1>
+          <h1 className="text-3xl capitalize lg:text-4xl font-bold text-gray-900">{product.name}</h1>
 
           {/* Price */}
           <div className="mt-4 flex items-center gap-3">
@@ -238,21 +242,31 @@ useEffect(() => {
 
             {/* Buttons */}
             <div className="flex items-center gap-4">
-              {!isInCart ? (
-                <button
-                  onClick={handleAddToCart}
-                  className="flex-1 bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-300"
-                >
-                  Add to Cart
-                </button>
+              {product.stock > 0 ? (
+                !isInCart ? (
+                  <button
+                    onClick={handleAddToCart}
+                    className="flex-1 bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-colors duration-300"
+                  >
+                    Add to Cart
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-500 transition-colors duration-300"
+                  >
+                    Buy Now
+                  </button>
+                )
               ) : (
                 <button
-                  onClick={handleBuyNow}
-                  className="flex-1 bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-500 transition-colors duration-300"
+                  disabled
+                  className="flex-1 bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed"
                 >
-                  Buy Now
+                  Out of Stock
                 </button>
               )}
+
               <button
                 onClick={handleWishlist}
                 className="p-3 border rounded-lg text-gray-600 hover:bg-gray-100 transition-colors duration-300"
@@ -269,10 +283,10 @@ useEffect(() => {
 
 
 
-{/* 🔹 Review Section */}
-    <div className="mt-12">
-      <ReviewSection productId={product.id} />
-    </div>
+      {/* 🔹 Review Section */}
+      <div className="mt-12">
+        <ReviewSection productId={product.id} />
+      </div>
 
 
     </div>

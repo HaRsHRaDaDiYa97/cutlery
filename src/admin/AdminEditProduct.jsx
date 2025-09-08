@@ -24,7 +24,7 @@ export default function AdminEditProduct() {
     description: "",
   });
 
-console.log(product);
+
 
 
   const [existingImages, setExistingImages] = useState([]);
@@ -56,13 +56,18 @@ console.log(product);
   }, [product]);
 
 const handleChange = (e) => {
-  let value = e.target.value;
-  if (["price","sale_price","stock"].includes(e.target.name)) {
-    value = Number(value);
-  } else if (e.target.name === "category_id") {
-    value = Number(value);
+  let { name, value } = e.target;
+
+  // Allow empty string while typing, convert to number only if not empty
+  if (["price", "sale_price", "stock", "category_id"].includes(name)) {
+    if (value === "") {
+      value = "";
+    } else {
+      value = Number(value);
+    }
   }
-  setForm({ ...form, [e.target.name]: value });
+
+  setForm({ ...form, [name]: value });
 };
 
 

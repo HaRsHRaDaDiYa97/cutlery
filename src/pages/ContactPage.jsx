@@ -44,7 +44,7 @@ export default function ContactPage() {
 
       const result = await response.json();
 
-      toast.dismiss(); // clear old toasts before showing a new one
+     
 
       if (result.success) {
         toast.success("✅ Message sent successfully!", { toastId: "successMsg" });

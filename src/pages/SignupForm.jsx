@@ -1,74 +1,84 @@
 import React, { useState } from "react";
-import { useSignupMutation } from "../features/authApi";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function SignupForm() {
-  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "" });
-  const [signup, { isLoading }] = useSignupMutation();
+  // --- Your existing logic remains unchanged ---
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      const res = await signup(form).unwrap();
-      alert(res.message);
+      const res = await axios.post("http://localhost/cutlery-backend/api/signup.php", { email });
+      if (res.data.status === "success") {
+        toast.success("OTP sent to your email!");
+        navigate("/verify-otp", { state: { email: res.data.email } });
+      } else {
+        toast.error(res.data.message);
+      }
     } catch (err) {
-      console.error(err);
-      alert("Signup failed");
+      toast.error(err.response?.data?.message || "Signup failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
-          Create an Account
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Mobile Number"
-            value={form.mobile}
-            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-400"
-            required
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-2 text-white font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-700 transition"
-          >
-            {isLoading ? "Signing up..." : "Signup"}
-          </button>
-        </form>
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <a href="/login" className="text-indigo-600 font-semibold hover:underline">
-            Login
-          </a>
-        </p>
+    <div className="flex min-h-screen flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow-lg rounded-xl sm:px-10 border border-gray-200">
+          
+          <div className="mb-10 text-center">
+            <Link to="/" className="inline-block">
+              <span className="text-4xl font-bold text-gray-900 tracking-wider">DIVA</span>
+              <span className="block text-xs font-medium text-gray-500 tracking-[0.2em]">JEWELLER</span>
+            </Link>
+            <h2 className="mt-8 text-3xl font-bold tracking-tight text-gray-900">
+              Create an Account
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-black hover:underline">
+                Login
+              </Link>
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                Email address
+              </label>
+              <div className="mt-2">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="block w-full rounded-md border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6"
+                  placeholder="you@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex w-full justify-center cursor-pointer rounded-md bg-black px-3 py-2.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Sending OTP..." : "Continue with Email"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

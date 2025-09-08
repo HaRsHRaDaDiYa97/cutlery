@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiInbox, FiUser, FiMail, FiPhone, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { API_BASE } from "../api";
 
 // --- REUSABLE COMPONENTS FOR DIFFERENT STATES ---
 const LoadingSpinner = () => (
@@ -50,7 +51,7 @@ export const AdminContact = () => {
 
   // --- Fetch contacts ---
   const fetchContacts = () => {
-    fetch("http://localhost/cutlery-backend/api/contact.php")
+    fetch(`${API_BASE}/contact.php`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -75,7 +76,7 @@ export const AdminContact = () => {
   const handleDelete = (id) => {
     if (!window.confirm("Are you sure you want to delete this message?")) return;
 
-    fetch("http://localhost/cutlery-backend/api/contact.php", {
+    fetch(`${API_BASE}/contact.php`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),

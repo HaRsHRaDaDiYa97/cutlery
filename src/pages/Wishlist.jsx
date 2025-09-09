@@ -181,6 +181,7 @@ import { useSelector } from "react-redux";
 import { useGetWishlistQuery } from "../features/wishlistApi";
 import ProductCard from "../components/ProductCard";
 import { API_BASE } from "../api";
+import WishlistHelmet from "../seo_helmet/WishlistHelmet";
 
 // Spinner Component
 const Spinner = () => (
@@ -327,6 +328,11 @@ useEffect(() => {
 
   // --- Render Products ---
   return (
+
+<>
+
+<WishlistHelmet />
+
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="border-b border-gray-200 pb-4 mb-8">
@@ -368,6 +374,9 @@ useEffect(() => {
         </div>
       </div>
     </div>
+
+</>
+
   );
 };
 

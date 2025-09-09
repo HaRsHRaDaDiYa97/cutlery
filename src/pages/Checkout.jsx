@@ -8,6 +8,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { API_BASE } from "../api";
 
 import { cartApi } from "../features/cartApi"; // ✅ import cartApi
+import CheckoutHelmet from "../seo_helmet/CheckoutHelmet";
 
 
 const Checkout = () => {
@@ -144,6 +145,12 @@ const Checkout = () => {
   }
 
   return (
+
+<>
+
+
+<CheckoutHelmet />
+
     <div className="bg-gray-50 min-h-screen py-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-center text-gray-900 sm:text-4xl">Checkout</h1>
@@ -293,6 +300,10 @@ const Checkout = () => {
         </form>
       </div>
     </div>
+
+
+</>
+
   );
 };
 

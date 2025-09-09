@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FiShoppingBag, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { API_BASE } from "../api";
 import { useSelector } from "react-redux";
+import OrdersHelmet from "../seo_helmet/OrdersHelmet";
 
 const StatusBadge = ({ status }) => {
   const baseClasses = "rounded-full px-2.5 py-0.5 text-xs font-medium";
@@ -39,6 +40,11 @@ const userId = user?.id; // or user?.user_id depending on your backend
   }, []);
 
   return (
+
+<>
+
+<OrdersHelmet />
+
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="border-b border-gray-200 pb-6 mb-8">
@@ -160,5 +166,8 @@ const userId = user?.id; // or user?.user_id depending on your backend
         )}
       </div>
     </div>
+
+</>
+
   );
 }

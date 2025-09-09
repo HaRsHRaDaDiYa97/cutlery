@@ -8,6 +8,7 @@ import { useGetWishlistQuery } from "../features/wishlistApi";
 import { useSelector } from "react-redux";
 import { FiChevronRight, FiSearch, FiInbox, FiFilter, FiX } from "react-icons/fi";
 import Pagination from "../components/Pagination";
+import ProductsHelmet from "../seo_helmet/ProductsHelmet";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -72,6 +73,12 @@ export default function Products() {
   const handleApplyFilters = () => setIsFilterOpen(false);
 
   return (
+
+<>
+
+<ProductsHelmet />
+
+
     <div className="bg-white min-h-screen relative">
       <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -188,5 +195,8 @@ export default function Products() {
         </div>
       </div>
     </div>
+
+</>
+
   );
 }

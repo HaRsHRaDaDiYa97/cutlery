@@ -30,12 +30,12 @@ const Header = () => {
   const navigate = useNavigate();
 
   // NOTE: You need to create and export this 'logout' action from your authSlice
-const handleLogout = () => {
-  dispatch(logout());       // Clear Redux state and localStorage
-  setIsProfileMenuOpen(false);
-  setIsMenuOpen(false);
-  navigate('/login');       // Redirect to login page
-};
+  const handleLogout = () => {
+    dispatch(logout());       // Clear Redux state and localStorage
+    setIsProfileMenuOpen(false);
+    setIsMenuOpen(false);
+    navigate('/login');       // Redirect to login page
+  };
 
 
   useEffect(() => {
@@ -99,22 +99,32 @@ const handleLogout = () => {
               <IconBtn
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 ariaLabel="Open user menu"
-                
               >
                 <FiUser />
               </IconBtn>
               <div
                 className={`absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-all duration-200 ease-out
-                  ${isProfileMenuOpen ? 'transform opacity-100 scale-100' : 'transform opacity-0 scale-95 pointer-events-none'}`}
+      ${isProfileMenuOpen ? 'transform opacity-100 scale-100' : 'transform opacity-0 scale-95 pointer-events-none'}`}
                 role="menu" aria-orientation="vertical"
               >
                 <div className="py-1" role="none">
                   {userId ? (
                     <>
-                      <div className="px-4 py-3"><p className="text-sm text-gray-500">Signed in as</p><p className="truncate text-sm font-medium text-gray-900">{user.email}</p></div>
+                      <div className="px-4 py-3">
+                        <p className="text-sm text-gray-500">Signed in as</p>
+                        <p className="truncate text-sm font-medium text-gray-900">
+                          {user.email}
+                        </p>
+                      </div>
                       <div className="border-t border-gray-100"></div>
                       <ProfileMenuItem to="/account">My Account</ProfileMenuItem>
                       <ProfileMenuItem to="/orders">Order History</ProfileMenuItem>
+
+                      {/* ✅ Show admin dashboard if role=admin */}
+                      {user?.role === "admin" && (
+                        <ProfileMenuItem to="/admin">Admin Dashboard</ProfileMenuItem>
+                      )}
+
                       <div className="border-t border-gray-100"></div>
                       <ProfileMenuItem onClick={handleLogout}>Sign Out</ProfileMenuItem>
                     </>
@@ -136,7 +146,7 @@ const handleLogout = () => {
         </div>
       </header>
 
-     
+
 
       {/* Mobile Menu Drawer */}
       <div className={`fixed inset-0 bg-black/60 z-50 transition-opacity duration-300 md:hidden ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)} aria-hidden="true"></div>
@@ -157,25 +167,71 @@ const handleLogout = () => {
               <div>
                 <div className="px-2 py-2">
                   <p className="text-sm text-gray-500">Signed in as</p>
-                  <p className="truncate text-sm font-medium text-gray-900">{user.email}</p>
+                  <p className="truncate text-sm font-medium text-gray-900">
+                    {user.email}
+                  </p>
                 </div>
-                 <NavLink to="/account" onClick={() => setIsMenuOpen(false)} className="mt-2 flex w-full items-center gap-3 rounded-md px-4 py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"><FiUser /> My Account</NavLink>
-                 <button onClick={handleLogout} className="mt-4 block w-full rounded-md border border-gray-300 bg-white px-6 py-3 text-center text-base font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none">
-                    Sign Out
-                 </button>
+                <NavLink
+                  to="/account"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-4 py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  <FiUser /> My Account
+                </NavLink>
+                <NavLink
+                  to="/orders"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="mt-2 flex w-full items-center gap-3 rounded-md px-4 py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                >
+                  <FiShoppingBag /> Order History
+                </NavLink>
+
+                {/* ✅ Show admin dashboard if role=admin */}
+                {user?.role === "admin" && (
+                  <NavLink
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="mt-2 flex w-full items-center gap-3 rounded-md px-4 py-3 text-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  >
+                    🛠 Admin Dashboard
+                  </NavLink>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="mt-4 block w-full rounded-md border border-gray-300 bg-white px-6 py-3 text-center text-base font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none"
+                >
+                  Sign Out
+                </button>
               </div>
             ) : (
               // Logged-out view for mobile
               <div>
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block w-full rounded-md bg-black px-6 py-3 text-center text-base font-medium text-white shadow-sm transition-colors hover:bg-gray-800">
+                <Link
+                  to="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block w-full rounded-md bg-black px-6 py-3 text-center text-base font-medium text-white shadow-sm transition-colors hover:bg-gray-800"
+                >
                   Log In
                 </Link>
                 <div className="mt-4 text-center text-sm">
-                  <p className="text-gray-600">New customer? <Link to="/signup" onClick={() => setIsMenuOpen(false)} className="font-medium text-black hover:underline">Create an account</Link></p>
+                  <p className="text-gray-600">
+                    New customer?{" "}
+                    <Link
+                      to="/signup"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="font-medium text-black hover:underline"
+                    >
+                      Create an account
+                    </Link>
+                  </p>
                 </div>
               </div>
             )}
           </div>
+
+
+
         </div>
       </div>
     </>

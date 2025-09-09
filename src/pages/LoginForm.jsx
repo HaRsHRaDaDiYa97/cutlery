@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import LoginHelmet from "../seo_helmet/LoginHelmet";
 
 function LoginForm() {
   // --- Your existing logic remains unchanged ---
@@ -29,6 +30,11 @@ function LoginForm() {
   };
 
   return (
+
+<>
+
+<LoginHelmet />
+
     <div className="flex min-h-screen flex-col justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg rounded-xl sm:px-10 border border-gray-200">
@@ -82,6 +88,8 @@ function LoginForm() {
         </div>
       </div>
     </div>
+
+    </>
   );
 }
 

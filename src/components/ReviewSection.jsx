@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 // Reusable Star icon
 const StarIcon = ({ className }) => (
@@ -27,6 +28,8 @@ const ReviewSection = ({ productId }) => {
   const [comment, setComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const navigate = useNavigate();
 
   const limit = 5; // reviews per page
 
@@ -67,7 +70,12 @@ const ReviewSection = ({ productId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return toast.error("⚠️ Please login to leave a review");
+    if (!user) {
+      toast.error("⚠️ Please login to leave a review");
+      navigate('/login');
+      return;
+    }
+
     if (!comment.trim()) return toast.error("⚠️ Comment cannot be empty");
 
     setSubmitting(true);
@@ -120,11 +128,10 @@ const ReviewSection = ({ productId }) => {
                     className="focus:outline-none"
                   >
                     <StarIcon
-                      className={`h-7 w-7 transition-colors duration-150 ${
-                        star <= (hoverRating || rating)
+                      className={`h-7 w-7 transition-colors duration-150 ${star <= (hoverRating || rating)
                           ? "text-yellow-400"
                           : "text-gray-300"
-                      }`}
+                        }`}
                     />
                   </button>
                 ))}

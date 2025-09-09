@@ -4,6 +4,8 @@ import { FiAward, FiStar, FiShield, FiUsers } from 'react-icons/fi';
 
 
 import Desktop_Banner_1 from '../assets/images/Desktop_Banner_1.webp'
+import { Helmet } from 'react-helmet-async';
+import AboutSEO from '../seo_helmet/AboutSEO';
 
 // A reusable component for the "Our Values" section
 const ValueCard = ({ icon, title, children }) => (
@@ -26,6 +28,14 @@ const StatItem = ({ value, label }) => (
 
 export default function AboutUsPage() {
   return (
+
+<>
+
+
+
+<AboutSEO />
+
+
     <div className="bg-white">
       <main>
         {/* Hero Section */}
@@ -125,5 +135,7 @@ export default function AboutUsPage() {
         </div>
       </main>
     </div>
+
+    </>
   );
 }

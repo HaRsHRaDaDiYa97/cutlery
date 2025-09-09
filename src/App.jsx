@@ -6,11 +6,13 @@ import AppRoutes from "./routes/AppRoutes";
 import Footer from "./components/Footer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // ✅ make sure toast styles load
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <>
       <Router>
+        <ScrollToTop /> {/* 🔹 Add this here */}
         <div className="font-sans">
           <Header />
           <main className="min-h-screen container mx-auto py-4 lg:py-8">

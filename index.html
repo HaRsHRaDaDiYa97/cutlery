@@ -2,13 +2,81 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Mobile responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+
+    <!-- Title (default, can be overridden by React Helmet later) -->
+    <title>Modifix | Luxury Cutlery & Premium Dining Essentials</title>
+
+    <!-- SEO Meta Tags -->
+    <meta
+      name="description"
+      content="Modifix - Discover luxury cutlery collections crafted for elegance and style. Shop premium spoons, forks, knives, and dinnerware designed for modern dining."
+    />
+    <meta
+      name="keywords"
+      content="luxury cutlery, premium cutlery, Modifix cutlery, dining cutlery sets, stainless steel spoons, forks, knives, designer cutlery, elegant dinnerware"
+    />
+    <meta name="author" content="Modifix" />
+
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="Modifix | Luxury Cutlery & Dining Essentials" />
+    <meta
+      property="og:description"
+      content="Shop luxury cutlery collections at Modifix. Elegant spoons, forks, knives, and premium dinner sets for your dining table."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://modifix.com" />
+    <meta property="og:image" content="/og-image.jpg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Modifix | Luxury Cutlery & Dining Essentials" />
+    <meta
+      name="twitter:description"
+      content="Upgrade your dining experience with premium cutlery from Modifix. Explore elegant spoons, forks, knives, and complete cutlery sets."
+    />
+    <meta name="twitter:image" content="/og-image.jpg" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#d4af37" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://modifix.com" />
+
+    <!-- Structured Data (JSON-LD for Google Rich Snippets) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "Modifix",
+        "url": "https://modifix.com",
+        "logo": "https://modifix.com/logo.png",
+        "sameAs": [
+          "https://www.facebook.com/modifix",
+          "https://www.instagram.com/modifix"
+        ],
+        "description": "Modifix offers luxury cutlery, dining sets, and premium kitchen essentials. Shop elegant spoons, forks, knives, and designer dinnerware.",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Your Street, City",
+          "addressLocality": "Your City",
+          "addressRegion": "Your State",
+          "postalCode": "123456",
+          "addressCountry": "IN"
+        },
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-9876543210",
+          "contactType": "Customer Service"
+        }
+      }
+    </script>
 
     <!-- Razorpay script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
   </head>
   <body>
     <div id="root"></div>

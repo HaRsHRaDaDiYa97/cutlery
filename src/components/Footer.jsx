@@ -15,7 +15,7 @@ const policiesLinks = [
   { name: "Shipping Policy", to: "/shipping" },
   { name: "Refund Policy", to: "/refund" },
   { name: "Privacy Policy", to: "/privacy" },
-  { name: "Contact Information", to: "/contact" },
+
 ];
 
 const Footer = () => {

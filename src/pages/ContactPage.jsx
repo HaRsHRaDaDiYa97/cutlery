@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { FiMapPin, FiPhone, FiMail, FiClock } from "react-icons/fi";
 import { toast } from "react-toastify";
+import ContactHelmet from "../seo_helmet/ContactHelmet";
 
 const ContactInfoItem = ({ icon, title, children }) => (
   <div className="flex items-start">
@@ -61,6 +62,11 @@ export default function ContactPage() {
   };
 
   return (
+
+<>
+
+<ContactHelmet />
+
     <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
         {/* Page Header */}
@@ -200,5 +206,9 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+
+
+</>
+
   );
 }

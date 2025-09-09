@@ -13,6 +13,7 @@ import {
 import axios from "axios";
 import { logout, setCredentials } from "../app/slice/authSlice";
 import { toast } from "react-toastify";
+import AccountHelmet from "../seo_helmet/AccountHelmet";
 
 // Reusable Card Component
 const AccountCard = ({ to, icon, title, children }) => (
@@ -112,6 +113,11 @@ export default function AccountPage() {
     }
   };
   return (
+
+<>
+
+<AccountHelmet />
+
     <div className="bg-gray-50 min-h-screen">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Page Header */}
@@ -321,5 +327,8 @@ export default function AccountPage() {
         </div>
       </div>
     </div>
+
+</>
+
   );
 }

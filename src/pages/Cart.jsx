@@ -8,6 +8,7 @@ import {
 import { FiTrash2, FiShoppingCart, FiMinus, FiPlus } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 import { API_BASE } from "../api";
+import CartHelmet from "../seo_helmet/CartHelmet";
 
 // Spinner for loading states
 const Spinner = () => (
@@ -143,6 +144,12 @@ const handleRemove = async (e, item) => {
     }
 
     return (
+
+
+<>
+
+<CartHelmet />
+
         <div className="bg-gray-100">
             <main className="mx-auto max-w-2xl px-4 pt-16 pb-24 sm:px-6 lg:max-w-7xl lg:px-8">
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -304,6 +311,9 @@ const handleRemove = async (e, item) => {
                 </div>
             </main>
         </div>
+
+</>
+
     );
 };
 

@@ -7,7 +7,12 @@ import { useGetProductQuery } from "../features/productApi";
 import { useAddToWishlistMutation, useGetWishlistQuery, useRemoveFromWishlistMutation } from "../features/wishlistApi";
 import { useSelector } from "react-redux";
 import { useAddToCartMutation, useGetCartQuery } from "../features/cartApi";
-import ReviewSection from "../components/ReviewSection";
+import Loader from "../components/Loader";
+import { lazy, Suspense } from "react";
+import ProductHelmet from "../seo_helmet/ProductHelmet";
+
+const ReviewSection = lazy(() => import("../components/ReviewSection"));
+
 
 export default function ProductDetail() {
 
@@ -128,6 +133,13 @@ const navigate = useNavigate();
     : 0;
 
   return (
+
+<>
+
+
+  {/* SEO Helmet */}
+    <ProductHelmet product={product} />
+
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Breadcrumbs */}
       <nav className="text-sm text-gray-500 mb-6">
@@ -157,6 +169,7 @@ const navigate = useNavigate();
                 <img
                   src={img.image_url}
                   alt={`Thumbnail ${i}`}
+                  loading="lazy"
                   className="w-full h-22 object-cover"
                 />
               </button>
@@ -174,6 +187,7 @@ const navigate = useNavigate();
             <img
               src={product.images?.[activeImageIndex]?.image_url}
               alt={product.name}
+              loading="lazy"
               className="w-full h-[400px] md:h-[500px] lg:h-[550px] object-cover rounded-lg border"
             />
           </div>
@@ -285,10 +299,16 @@ const navigate = useNavigate();
 
       {/* 🔹 Review Section */}
       <div className="mt-12">
-        <ReviewSection productId={product.id} />
+        <Suspense fallback={<Loader />}>
+          <ReviewSection productId={product.id} />
+        </Suspense>
       </div>
 
 
     </div>
+
+
+</>
+
   );
 }

@@ -2,7 +2,9 @@ import React from 'react'
 import HeroSlider from '../components/HeroSlider'
 import CategorySlider from '../components/CategorySlider'
 import { Helmet } from 'react-helmet-async'
-export const Home = () => {
+
+
+export default function Home() {
   return (
     <>
 

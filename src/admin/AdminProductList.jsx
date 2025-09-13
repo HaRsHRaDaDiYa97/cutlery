@@ -208,6 +208,7 @@ const AdminProductList = () => {
                       <img
                         className="h-16 w-16 rounded-lg object-cover flex-shrink-0"
                         src={product.image || "/placeholder.png"}
+                        loading="lazy"
                         alt={product.name}
                       />
                       <div className="flex-1 min-w-0">

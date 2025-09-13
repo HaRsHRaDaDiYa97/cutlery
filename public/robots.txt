@@ -1,0 +1,16 @@
+# robots.txt for Modifix
+
+# Allow all search engines
+User-agent: *
+Disallow:
+
+# Block sensitive/unnecessary paths
+Disallow: /admin/
+Disallow: /login/
+Disallow: /checkout/
+Disallow: /cart/
+Disallow: /src/
+Disallow: /node_modules/
+
+# Sitemap for faster indexing
+Sitemap: https://modifix.com/sitemap.xml

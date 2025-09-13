@@ -2,18 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-
-    <!-- Mobile responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Title (default, can be overridden by React Helmet later) -->
+    <!-- Title -->
     <title>Modifix | Luxury Cutlery & Premium Dining Essentials</title>
 
-    <!-- SEO Meta Tags -->
+    <!-- Meta Tags -->
     <meta
       name="description"
-      content="Modifix - Discover luxury cutlery collections crafted for elegance and style. Shop premium spoons, forks, knives, and dinnerware designed for modern dining."
+      content="Modifix offers luxury cutlery and dining sets. Elegant spoons, forks, knives, and premium dinnerware for modern dining."
     />
     <meta
       name="keywords"
@@ -21,7 +18,13 @@
     />
     <meta name="author" content="Modifix" />
 
-    <!-- Open Graph for Social Sharing -->
+    <!-- Canonical -->
+    <link rel="canonical" href="https://modifix.com" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#d4af37" />
+
+    <!-- Open Graph (Facebook, WhatsApp) -->
     <meta property="og:title" content="Modifix | Luxury Cutlery & Dining Essentials" />
     <meta
       property="og:description"
@@ -29,7 +32,7 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://modifix.com" />
-    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image" content="https://modifix.com/og-image.jpg" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -38,15 +41,18 @@
       name="twitter:description"
       content="Upgrade your dining experience with premium cutlery from Modifix. Explore elegant spoons, forks, knives, and complete cutlery sets."
     />
-    <meta name="twitter:image" content="/og-image.jpg" />
+    <meta name="twitter:image" content="https://modifix.com/og-image.jpg" />
 
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#d4af37" />
+    <!-- ✅ Favicons (generated with your logo using realfavicongenerator.net) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#d4af37" />
+    <meta name="msapplication-TileColor" content="#d4af37" />
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://modifix.com" />
-
-    <!-- Structured Data (JSON-LD for Google Rich Snippets) -->
+    <!-- Structured Data: Store Info -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -75,7 +81,33 @@
       }
     </script>
 
-    <!-- Razorpay script -->
+    <!-- Structured Data: Example Product -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "Luxury Gold Cutlery Set",
+        "image": [
+          "https://modifix.com/products/gold-cutlery-set-1.jpg",
+          "https://modifix.com/products/gold-cutlery-set-2.jpg"
+        ],
+        "description": "Premium stainless steel gold-plated cutlery set with spoons, forks, and knives. Perfect for luxury dining.",
+        "brand": {
+          "@type": "Brand",
+          "name": "Modifix"
+        },
+        "sku": "CUTLERY-GOLD-001",
+        "offers": {
+          "@type": "Offer",
+          "url": "https://modifix.com/products/gold-cutlery-set",
+          "priceCurrency": "INR",
+          "price": "2499",
+          "availability": "https://schema.org/InStock"
+        }
+      }
+    </script>
+
+    <!-- Razorpay -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   </head>
   <body>

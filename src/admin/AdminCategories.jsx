@@ -117,7 +117,7 @@ const AdminCategories = () => {
                   <li key={cat.id} className="p-4">
                     <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
-                            {cat.image ? <img src={cat.image} alt={cat.name} className="h-16 w-16 rounded-lg object-cover" /> : <div className="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">No Image</div>}
+                            {cat.image ? <img src={cat.image} alt={cat.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" /> : <div className="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">No Image</div>}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 truncate">{cat.name}</p>

@@ -49,6 +49,7 @@ const HeroSlider = () => {
               <img
                 src={slide.imageUrl}
                 alt={`Slide ${slide.id}`}
+                loading="lazy"
                 className="w-full h-[40vh] sm:h-[60vh] lg:h-[80vh] object-cover"
               />
             </Link>

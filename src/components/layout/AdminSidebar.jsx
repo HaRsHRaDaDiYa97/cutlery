@@ -17,7 +17,7 @@ const AdminSidebar = ({ isSidebarOpen, toggleSidebar }) => {
   { icon: <FiBox />, name: "Products", path: "/admin/products" },
   { icon: <FiTag />, name: "Categories", path: "/admin/categories" },
   { icon: <FiFileText />, name: "Orders", path: "/admin/orders" },
-  { icon: <FiUsers />, name: "Customers", path: "/admin/customers" },
+  { icon: <FiUsers />, name: "Users", path: "/admin/users" },
   { icon: <FiStar />, name: "Reviews", path: "/admin/reviews" },
   { icon: <FiMail />, name: "Messages", path: "/admin/messages" },
 

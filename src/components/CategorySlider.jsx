@@ -113,6 +113,7 @@ const CategorySlider = () => {
           <img
             src={category.image}
             alt={category.name}
+            loading="lazy"
             className="w-full h-80 object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>

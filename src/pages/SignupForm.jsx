@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import SignupHelmet from "../seo_helmet/SignupHelmet";
+import { API_BASE } from "../api";
 
 function SignupForm() {
   // --- Your existing logic remains unchanged ---
@@ -14,7 +15,7 @@ function SignupForm() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("http://localhost/cutlery-backend/api/signup.php", { email });
+      const res = await axios.post(`${API_BASE}/signup.php`, { email });
       if (res.data.status === "success") {
         toast.success("OTP sent to your email!");
         navigate("/verify-otp", { state: { email: res.data.email } });

@@ -26,7 +26,17 @@ export default function Products() {
 
   const itemsPerPage = 9;
   const userId = useSelector((state) => state.auth.user?.id);
+ 
+ 
   const { data: wishlistData } = useGetWishlistQuery(userId, { skip: !userId });
+
+const wishlistItems = Array.isArray(wishlistData?.wishlist)
+  ? wishlistData.wishlist
+  : Array.isArray(wishlistData)
+  ? wishlistData
+  : [];
+
+
 
   // Debounce search
   useEffect(() => {
@@ -144,7 +154,7 @@ export default function Products() {
                         title={p.name}
                         price={p.price}
                         salePrice={p.sale_price}
-                        wishlistData={wishlistData}
+                       wishlistData={wishlistItems} // ✅ always array
                       />
                     </Link>
                   ))}
